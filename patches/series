@@ -1,0 +1,5 @@
+0001-Add-support-for-Ubuntu-Core.patch
+0002-plugins-novatel-blacklist-specific-dell-products.patch
+0003-Add-Dell-modem-plugin-for-certain-types.patch
+0004-serial-mark-forced-close-at-the-right-point.patch
+0005-broadband-fix-race-when-disconnecting-a-bearer.patch

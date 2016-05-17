@@ -1,0 +1,29 @@
+From 792a126f5a1c6e7a814da90652f3fb6002abd896 Mon Sep 17 00:00:00 2001
+From: Simon Fels <simon.fels@canonical.com>
+Date: Tue, 17 May 2016 15:29:26 +0200
+Subject: [PATCH 2/5] plugins: novatel: blacklist specific dell products
+
+Some modems made by dell are not using the novatel modem but still
+labeled with the same vendor id so we have to add those to the
+blacklist.
+---
+ plugins/novatel/mm-plugin-novatel.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/plugins/novatel/mm-plugin-novatel.c b/plugins/novatel/mm-plugin-novatel.c
+index 9eaf285..0ebae67 100644
+--- a/plugins/novatel/mm-plugin-novatel.c
++++ b/plugins/novatel/mm-plugin-novatel.c
+@@ -234,6 +234,9 @@ mm_plugin_create (void)
+                                        0x413c, /* Dell */
+                                        0 };
+     static const mm_uint16_pair forbidden_products[] = { { 0x1410, 0x9010 }, /* Novatel E362 */
++                                                         { 0x413c, 0x81ba }, /* Dell */
++                                                         { 0x413c, 0x81bb }, /* Dell */
++                                                         { 0x413c, 0x81bc }, /* Dell */
+                                                          { 0, 0 } };
+     static const MMAsyncMethod custom_init = {
+         .async  = G_CALLBACK (novatel_custom_init),
+-- 
+2.7.4
+

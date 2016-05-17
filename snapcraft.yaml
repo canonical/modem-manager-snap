@@ -1,0 +1,91 @@
+name: modem-manager
+version: 1.4.0-1
+summary: ModemManager is a service which controls mobile broadband
+description: |
+  ModemManager is a DBus-activated daemon which controls mobile broadband
+  (2G/3G/4G) devices and connections. Whether built-in devices, USB dongles,
+  bluetooth-paired telephones or professional RS232/USB devices with external
+  power supplies, ModemManager is able to prepare and configure the modems and
+  setup connections with them.
+  Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+
+apps:
+  mmcli:
+    command: usr/bin/mmcli
+  modemmanager:
+    command: bin/modemmanager
+    daemon: simple
+
+parts:
+  modemmanager-common:
+    plugin: copy
+    files:
+      bin/modemmanager: bin/modemmanager
+      data/copyright: usr/share/doc/modem-manager/copyright
+
+  modemmanager:
+    plugin: autotools
+
+    source: https://www.freedesktop.org/software/ModemManager/ModemManager-1.4.0.tar.xz
+
+    # NOTE: Force autogen to be executed again even if the tarball already
+    # comes with a configure script but that links against aclocal-1.13
+    # which we don't profile anymore and will cause the build to fail.
+    force-autogen: true
+
+    configflags:
+      - --prefix=/usr
+      - --libdir=/usr/lib
+      - --libexecdir=/usr/lib/ModemManager
+      - --sysconfdir=/etc
+      - --enable-gtk-doc=no
+      - --with-polkit=none
+      - --enable-vala=no
+      - --with-snappy
+
+    build-packages:
+      - intltool
+      - gtk-doc-tools
+      - libdbus-glib-1-dev
+      - libdbus-1-dev
+      - libiw-dev
+      - libglib2.0-dev
+      - libmbim-glib-dev
+      - libnl-3-dev
+      - libnl-route-3-dev
+      - libnl-genl-3-dev
+      - libnss3-dev
+      - libgnutls28-dev
+      - libgcrypt11-dev
+      - libqmi-glib-dev
+      - libxml-parser-perl
+      - uuid-dev
+      - libsystemd-dev
+      - libudev-dev
+      - libgudev-1.0-dev
+      - libgirepository1.0-dev
+      - gobject-introspection
+      - libsoup2.4-dev
+      - libglib2.0-doc
+      - libmm-glib-dev
+      - libndp-dev
+      - libreadline-dev
+      - libnewt-dev
+      - dbus-test-runner
+      - python-dbus
+      - python-gi
+
+    stage-packages:
+      - automake
+      - libtool
+      - intltool
+      - gtk-doc-tools
+      - gnome-common
+      - gobject-introspection
+      - libgirepository1.0-dev
+      - libglib2.0-dev
+      - libgudev-1.0-dev
+      - libqmi-glib-dev
+      - libmbim-glib-dev
+      - libglib2.0-doc
+      - libqmi-utils
