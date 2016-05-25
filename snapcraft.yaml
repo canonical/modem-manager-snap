@@ -9,12 +9,20 @@ description: |
   setup connections with them.
   Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
 
+slots:
+  service: modem-manager
+
+plugs:
+  mmcli: modem-manager
+
 apps:
   mmcli:
     command: usr/bin/mmcli
+    plugs: [mmcli]
   modemmanager:
     command: bin/modemmanager
     daemon: simple
+    slots: [service]
 
 parts:
   modemmanager-common:
