@@ -1,0 +1,38 @@
+From 8c2004df893bc3923f0a033244d0125fbc78c73a Mon Sep 17 00:00:00 2001
+From: Simon Fels <simon.fels@canonical.com>
+Date: Tue, 17 May 2016 15:31:07 +0200
+Subject: [PATCH 4/5] serial: mark forced close at the right point
+
+---
+ src/mm-port-serial.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/mm-port-serial.c b/src/mm-port-serial.c
+index 9b74900..0aac8c5 100644
+--- a/src/mm-port-serial.c
++++ b/src/mm-port-serial.c
+@@ -1414,10 +1414,6 @@ port_serial_close_force (MMPortSerial *self)
+ 
+     mm_dbg ("(%s) forced to close port", mm_port_get_device (MM_PORT (self)));
+ 
+-    /* Mark as having forced the close, so that we don't warn about incorrect
+-     * open counts */
+-    self->priv->forced_close = TRUE;
+-
+     /* If already closed, done */
+     if (!self->priv->open_count && !self->priv->reopen_ctx)
+         return;
+@@ -1429,6 +1425,10 @@ port_serial_close_force (MMPortSerial *self)
+     self->priv->open_count = 1;
+     mm_port_serial_close (self);
+ 
++    /* Mark as having forced the close, so that we don't warn about incorrect
++     * open counts */
++    self->priv->forced_close = TRUE;
++
+     /* Notify about the forced close status */
+     g_signal_emit (self, signals[FORCED_CLOSE], 0);
+ }
+-- 
+2.7.4
+

@@ -1,0 +1,29 @@
+From 11b0b655dc3f081eaa51918a16ac683954dfdc20 Mon Sep 17 00:00:00 2001
+From: Simon Fels <simon.fels@canonical.com>
+Date: Tue, 17 May 2016 15:32:55 +0200
+Subject: [PATCH 5/5] broadband: fix race when disconnecting a bearer
+
+---
+ src/mm-broadband-modem.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
+index 17c128c..6c1b35f 100644
+--- a/src/mm-broadband-modem.c
++++ b/src/mm-broadband-modem.c
+@@ -8154,8 +8154,10 @@ bearer_list_disconnect_all_bearers_ready (MMBearerList *list,
+ 
+     if (!mm_bearer_list_disconnect_all_bearers_finish (list, res, &error)) {
+         g_simple_async_result_take_error (ctx->result, error);
+-        disabling_context_complete_and_free (ctx);
+-        return;
++        if (!g_error_matches (error, MM_CORE_ERROR, MM_CORE_ERROR_IN_PROGRESS)) {
++            disabling_context_complete_and_free (ctx);
++            return;
++        }
+     }
+ 
+     /* Go on to next step */
+-- 
+2.7.4
+
