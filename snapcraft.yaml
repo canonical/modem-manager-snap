@@ -34,12 +34,9 @@ parts:
   modemmanager:
     plugin: autotools
 
-    source: https://www.freedesktop.org/software/ModemManager/ModemManager-1.4.0.tar.xz
-
-    # NOTE: Force autogen to be executed again even if the tarball already
-    # comes with a configure script but that links against aclocal-1.13
-    # which we don't profile anymore and will cause the build to fail.
-    force-autogen: true
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+    source-type: git
+    source-branch: modem-manager/1.4.0
 
     configflags:
       - --prefix=/usr
