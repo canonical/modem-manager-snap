@@ -34,9 +34,9 @@ parts:
   libmbim:
     plugin: autotools
 
-    source: https://anongit.freedesktop.org/git/libmbim/libmbim.git
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-tag: 1.14.0
+    source-branch: libmbim/xenial/1.14.0
 
     configflags:
       - --with-udev
@@ -46,13 +46,20 @@ parts:
       - libglib2.0-dev
       - libgudev-1.0-dev
 
+    filesets:
+      wanted:
+        - lib/libmbim-glib.so*
+
+    snap:
+      - $wanted
+
   libqmi:
     after: [ libmbim ]
     plugin: autotools
 
-    source: https://anongit.freedesktop.org/git/libqmi.git
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-tag: 1.16.2
+    source-branch: libqmi/xenial/1.16.2
 
     configflags:
       - --enable-mbim-qmux
@@ -62,13 +69,20 @@ parts:
       - intltool
       - libglib2.0-dev
 
+    filesets:
+      wanted:
+        - lib/libqmi-glib.so*
+
+    snap:
+      - $wanted
+
   modemmanager:
     after: [ libmbim, libqmi ]
     plugin: autotools
 
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-branch: modem-manager/1.6.2
+    source-branch: modem-manager/xenial/1.6.2
 
     configflags:
       - --prefix=/usr
@@ -120,3 +134,27 @@ parts:
       - libglib2.0-dev
       - libgudev-1.0-dev
       - libglib2.0-doc
+
+    filesets:
+      wanted:
+        - usr/bin/mmcli
+        - usr/sbin/ModemManager
+        - usr/lib/ModemManager/
+        - usr/lib/x86_64-linux-gnu/libgudev-1.0.so*
+        - usr/lib/libmm-glib.so*
+        - usr/share/doc/libgudev-1.0-0/
+        # Following libraries could also be pulled from core
+        - usr/lib/x86_64-linux-gnu/libgmodule-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libgio-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libgobject-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libglib-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libffi.so*
+        - usr/lib/x86_64-linux-gnu/libpcre.so*
+        - lib/x86_64-linux-gnu/libglib-2.0.so*
+        - lib/x86_64-linux-gnu/libpcre.so*
+        - usr/share/doc/libglib2.0-*
+        - usr/share/doc/libffi6/
+        - usr/share/doc/libpcre*
+
+    snap:
+      - $wanted
