@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.4.0-1
+version: 1.6.2-1
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -31,12 +31,58 @@ parts:
       bin/modemmanager: bin/modemmanager
       data/copyright: usr/share/doc/modem-manager/copyright
 
-  modemmanager:
+  libmbim:
     plugin: autotools
 
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-branch: modem-manager/1.4.0
+    source-branch: libmbim/xenial/1.14.0
+
+    configflags:
+      - --with-udev
+      - --libexecdir=/usr/lib/libmbim
+
+    build-packages:
+      - libglib2.0-dev
+      - libgudev-1.0-dev
+
+    filesets:
+      wanted:
+        - lib/libmbim-glib.so*
+
+    snap:
+      - $wanted
+
+  libqmi:
+    after: [ libmbim ]
+    plugin: autotools
+
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+    source-type: git
+    source-branch: libqmi/xenial/1.16.2
+
+    configflags:
+      - --enable-mbim-qmux
+      - --libexecdir=/usr/lib/libqmi
+
+    build-packages:
+      - intltool
+      - libglib2.0-dev
+
+    filesets:
+      wanted:
+        - lib/libqmi-glib.so*
+
+    snap:
+      - $wanted
+
+  modemmanager:
+    after: [ libmbim, libqmi ]
+    plugin: autotools
+
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+    source-type: git
+    source-branch: modem-manager/xenial/1.6.2
 
     configflags:
       - --prefix=/usr
@@ -44,7 +90,7 @@ parts:
       - --libexecdir=/usr/lib/ModemManager
       - --sysconfdir=/etc
       - --enable-gtk-doc=no
-      - --with-polkit=none
+      - --with-polkit=no
       - --enable-vala=no
 
     build-packages:
@@ -54,14 +100,12 @@ parts:
       - libdbus-1-dev
       - libiw-dev
       - libglib2.0-dev
-      - libmbim-glib-dev
       - libnl-3-dev
       - libnl-route-3-dev
       - libnl-genl-3-dev
       - libnss3-dev
       - libgnutls28-dev
       - libgcrypt11-dev
-      - libqmi-glib-dev
       - libxml-parser-perl
       - uuid-dev
       - libsystemd-dev
@@ -89,7 +133,28 @@ parts:
       - libgirepository1.0-dev
       - libglib2.0-dev
       - libgudev-1.0-dev
-      - libqmi-glib-dev
-      - libmbim-glib-dev
       - libglib2.0-doc
-      - libqmi-utils
+
+    filesets:
+      wanted:
+        - usr/bin/mmcli
+        - usr/sbin/ModemManager
+        - usr/lib/ModemManager/
+        - usr/lib/x86_64-linux-gnu/libgudev-1.0.so*
+        - usr/lib/libmm-glib.so*
+        - usr/share/doc/libgudev-1.0-0/
+        # Following libraries could also be pulled from core
+        - usr/lib/x86_64-linux-gnu/libgmodule-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libgio-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libgobject-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libglib-2.0.so*
+        - usr/lib/x86_64-linux-gnu/libffi.so*
+        - usr/lib/x86_64-linux-gnu/libpcre.so*
+        - lib/x86_64-linux-gnu/libglib-2.0.so*
+        - lib/x86_64-linux-gnu/libpcre.so*
+        - usr/share/doc/libglib2.0-*
+        - usr/share/doc/libffi6/
+        - usr/share/doc/libpcre*
+
+    snap:
+      - $wanted
