@@ -1,0 +1,13 @@
+summary: Test modem-manager snap installation was successful
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    # Service should be up an running
+    wait_for_modem_manager
+
+    snap install network-manager
+
+    # Ensure all necessary plugs/slots are connected
+    snap interfaces | grep -Ezq "modem-manager:service .*modem-manager:mmcli"
+    snap interfaces | grep -Ezq "modem-manager:service .*network-manager:modem-manager"
