@@ -29,12 +29,18 @@ if [ -n "$SNAP_CHANNEL" ] ; then
 		snap install --$SNAP_CHANNEL modem-manager
 	fi
 else
+        # Install first from store to avoid error when performing the connection
+        snap install modem-manager
 	# Install prebuilt modem-manager snap
 	snap install --dangerous /home/modem-manager/modem-manager_*_amd64.snap
 	# As we have a snap which we build locally its unasserted and therefore
 	# we don't have any snap-declarations in place and need to manually
 	# connect all plugs.
-	sudo snap connect modem-manager:mmcli modem-manager:service
+	# NOTE This step is not needed (and will produce an error) because we
+	# have made an initial installation for the store. When snapd finally
+	# allows somehow connections of locally installed snaps this can be put
+	# in place again, and the installation from the store removed.
+	##sudo snap connect modem-manager:mmcli modem-manager:service
 fi
 
 # Snapshot of the current snapd state for a later restore
