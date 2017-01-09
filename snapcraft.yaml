@@ -49,6 +49,7 @@ parts:
     filesets:
       wanted:
         - lib/libmbim-glib.so*
+        - usr/lib/libmbim/mbim-proxy
 
     snap:
       - $wanted
@@ -72,6 +73,7 @@ parts:
     filesets:
       wanted:
         - lib/libqmi-glib.so*
+        - usr/lib/libqmi/qmi-proxy
 
     snap:
       - $wanted
