@@ -8,6 +8,8 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+confinement: strict
+grade: stable
 
 slots:
   service: modem-manager
@@ -54,7 +56,7 @@ parts:
         - lib/libmbim-glib.so*
         - usr/lib/libmbim/mbim-proxy
 
-    snap:
+    prime:
       - $wanted
 
   libqmi:
@@ -78,7 +80,7 @@ parts:
         - lib/libqmi-glib.so*
         - usr/lib/libqmi/qmi-proxy
 
-    snap:
+    prime:
       - $wanted
 
   modemmanager:
@@ -161,5 +163,5 @@ parts:
         - usr/share/doc/libffi6/
         - usr/share/doc/libpcre*
 
-    snap:
+    prime:
       - $wanted
