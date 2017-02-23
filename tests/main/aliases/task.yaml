@@ -1,0 +1,5 @@
+summary: Verify aliases provided by the snap are correctly enabled
+
+execute: |
+    test -e /snap/bin/mmcli
+    sudo /snap/bin/mmcli -L
