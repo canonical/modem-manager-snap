@@ -17,7 +17,7 @@ plugs:
 
 apps:
   mmcli:
-    command: usr/bin/mmcli
+    command: bin/mmcli
     plugs: [mmcli]
   modemmanager:
     command: bin/modemmanager
@@ -29,6 +29,7 @@ parts:
     plugin: copy
     files:
       bin/modemmanager: bin/modemmanager
+      bin/mmcli: bin/mmcli
       data/copyright: usr/share/doc/modem-manager/copyright
 
   libmbim:

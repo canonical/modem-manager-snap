@@ -22,6 +22,7 @@ environment:
     SNAP_NAME: modem-manager
     # Allow the host to pass the channel to use for the test run
     SNAP_CHANNEL: $(HOST:echo $SNAP_CHANNEL)
+    TEST_USER: test
 
 backends:
     qemu:
