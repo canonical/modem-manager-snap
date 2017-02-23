@@ -99,6 +99,7 @@ parts:
       - --enable-gtk-doc=no
       - --with-polkit=no
       - --enable-vala=no
+      - --enable-tests=yes
 
     build-packages:
       - intltool
@@ -141,6 +142,10 @@ parts:
       - libglib2.0-dev
       - libgudev-1.0-dev
       - libglib2.0-doc
+
+    install: |
+      # Run all tests ModemManager ships by default
+      make check
 
     filesets:
       wanted:
