@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. $TESTSLIB/utilities.sh
+
 echo "Wait for firstboot change to be ready"
 while ! snap changes | grep -q "Done"; do
 	snap changes || true
