@@ -34,6 +34,8 @@ backends:
 # Put this somewhere where we have read-write access
 path: /home/modem-manager
 
+kill-timeout: 1h
+
 exclude:
   - .git
 
