@@ -26,5 +26,10 @@ install_snap_under_test() {
         snap install $SNAP_NAME
 		# Install prebuilt snap
 		snap install --dangerous ${PROJECT_PATH}/${SNAP_NAME}_*_${SNAP_ARCH}.snap
+		if [ -n "$SNAP_AUTO_ALIASES" ]; then
+			for alias in $SNAP_AUTO_ALIASES ; do
+				snap alias $SNAP_NAME $alias
+			done
+		fi
 	fi
 }
