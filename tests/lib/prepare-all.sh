@@ -6,7 +6,14 @@ if [ -n "$SNAP_CHANNEL" ] ; then
 	exit 0
 fi
 
-# Setup classic snap and build the modem-manager snap in there
+# If there is a network-manager snap prebuilt for us, lets take
+# that one to speed things up.
+if [ -e $PROJECT_PATH/${SNAP_NAME}_*_amd64.snap ] ; then
+	exit 0
+fi
+
+
+# Setup classic snap and build the snap in there
 snap install --devmode --beta classic
 cat <<-EOF > /home/test/build-snap.sh
 #!/bin/sh
@@ -25,7 +32,7 @@ apt update
 apt -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' full-upgrade -y --force-yes
 
 apt install -y --force-yes snapcraft
-cd /home/modem-manager
+cd $PROJECT_PATH
 snapcraft clean
 snapcraft
 EOF
@@ -34,4 +41,4 @@ sudo classic /home/test/build-snap.sh
 snap remove classic
 
 # Make sure we have a snap build
-test -e /home/modem-manager/modem-manager_*_amd64.snap
+test -e $PROJECT_PATH/${SNAP_NAME}_*_amd64.snap
