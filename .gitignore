@@ -1,4 +1,7 @@
 parts
 prime
+stage
 .tests-extras
 .spread-reuse*
+*.snap
+*.swp
