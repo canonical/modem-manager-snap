@@ -7,7 +7,7 @@ execute: |
     wait_for_modem_manager
 
     # .. and mmcli should be able to reach ModemManager
-    /snap/bin/modem-manager.mmcli -L
+    /snap/bin/mmcli -L
 
     # Ensure all necessary plugs/slots are connected
     snap interfaces | grep -Pzq "modem-manager:service +modem-manager:mmcli"

@@ -8,6 +8,8 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+confinement: strict
+grade: stable
 
 slots:
   service: modem-manager
@@ -17,8 +19,10 @@ plugs:
 
 apps:
   mmcli:
-    command: usr/bin/mmcli
+    command: bin/mmcli
     plugs: [mmcli]
+    aliases:
+      - mmcli
   modemmanager:
     command: bin/modemmanager
     daemon: simple
@@ -29,6 +33,7 @@ parts:
     plugin: copy
     files:
       bin/modemmanager: bin/modemmanager
+      bin/mmcli: bin/mmcli
       data/copyright: usr/share/doc/modem-manager/copyright
 
   libmbim:
@@ -51,7 +56,7 @@ parts:
         - lib/libmbim-glib.so*
         - usr/lib/libmbim/mbim-proxy
 
-    snap:
+    prime:
       - $wanted
 
   libqmi:
@@ -75,7 +80,7 @@ parts:
         - lib/libqmi-glib.so*
         - usr/lib/libqmi/qmi-proxy
 
-    snap:
+    prime:
       - $wanted
 
   modemmanager:
@@ -94,6 +99,7 @@ parts:
       - --enable-gtk-doc=no
       - --with-polkit=no
       - --enable-vala=no
+      - --enable-tests=yes
 
     build-packages:
       - intltool
@@ -137,6 +143,10 @@ parts:
       - libgudev-1.0-dev
       - libglib2.0-doc
 
+    install: |
+      # Run all tests ModemManager ships by default
+      make check
+
     filesets:
       wanted:
         - usr/bin/mmcli
@@ -158,5 +168,5 @@ parts:
         - usr/share/doc/libffi6/
         - usr/share/doc/libpcre*
 
-    snap:
+    prime:
       - $wanted
