@@ -22,13 +22,18 @@ install_snap_under_test() {
 			snap install --$SNAP_CHANNEL $SNAP_NAME
 		fi
 	else
-        # Install first from store to avoid error when performing the connection
-        snap install $SNAP_NAME
+		# Install first from store to avoid error when performing the connection
+		snap install $SNAP_NAME
 		# Install prebuilt snap
 		snap install --dangerous ${PROJECT_PATH}/${SNAP_NAME}_*_${SNAP_ARCH}.snap
 		if [ -n "$SNAP_AUTO_ALIASES" ]; then
+			snapd_version=$(snap version | awk '/^snapd / {print $2; exit}')
 			for alias in $SNAP_AUTO_ALIASES ; do
-				snap alias $SNAP_NAME $alias
+				target=$SNAP_NAME.$alias
+				if dpkg --compare-versions $snapd_version lt 2.25 ; then
+					target=$SNAP_NAME
+				fi
+				snap alias $target $alias
 			done
 		fi
 	fi

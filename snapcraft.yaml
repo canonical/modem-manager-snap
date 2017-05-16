@@ -21,8 +21,7 @@ apps:
   mmcli:
     command: bin/mmcli
     plugs: [mmcli]
-    aliases:
-      - mmcli
+    aliases: [mmcli]
   modemmanager:
     command: bin/modemmanager
     daemon: simple
