@@ -44,6 +44,13 @@ exclude:
 prepare: |
   . $TESTSLIB/prepare-all.sh
 
+prepare-each: |
+  # Cleanup logs so we can just dump what has happened in the debug-each
+  # step below after a test case ran.
+  journalctl --rotate
+  journalctl --vacuum-time=1ms
+  dmesg -c > /dev/null
+
 suites:
     tests/main/:
         summary: Full-system tests for ModemManager

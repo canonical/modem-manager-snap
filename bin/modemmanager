@@ -8,7 +8,4 @@ set -x
 # loader happy and find the plugins at the right location
 export SNAP_APP_PATH=$SNAP
 
-$SNAP/usr/sbin/ModemManager \
-    --debug \
-    --log-level=DEBUG \
-    "$@"
+exec $SNAP/usr/sbin/ModemManager "$@"
