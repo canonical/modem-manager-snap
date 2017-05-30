@@ -36,10 +36,5 @@ install_snap_under_test() {
 				snap alias $target $alias
 			done
 		fi
-		# Stop, clean logs that might be from stable version, then start
-		systemctl stop snap.modem-manager.modemmanager
-		journalctl --rotate
-		journalctl --vacuum-time=1ms
-		systemctl start snap.modem-manager.modemmanager
 	fi
 }
