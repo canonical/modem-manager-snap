@@ -8,8 +8,10 @@ set -ex
 export SNAP_APP_PATH=$SNAP
 
 LOG_LEVEL="INFO"
+DEBUG=""
 if [ -f "$SNAP_DATA"/.debug_enabled ]; then
     LOG_LEVEL="DEBUG"
+    DEBUG="--debug"
 fi
 
-exec "$SNAP"/usr/sbin/ModemManager --log-level="$LOG_LEVEL" "$@"
+exec "$SNAP"/usr/sbin/ModemManager $DEBUG --log-level="$LOG_LEVEL" "$@"
