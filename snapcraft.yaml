@@ -17,6 +17,10 @@ slots:
 plugs:
   mmcli: modem-manager
 
+hooks:
+  configure:
+    plugs: [mmcli]
+
 apps:
   mmcli:
     command: bin/mmcli
@@ -28,12 +32,25 @@ apps:
     slots: [service]
 
 parts:
-  modemmanager-common:
-    plugin: copy
-    files:
-      bin/modemmanager: bin/modemmanager
-      bin/mmcli: bin/mmcli
-      data/copyright: usr/share/doc/modem-manager/copyright
+  modemmanager-hooks:
+    plugin: dump
+    source: hooks
+    organize:
+      configure: meta/hooks/configure
+
+  modemmanager-bin:
+    plugin: dump
+    source: bin
+    organize:
+      modemmanager: bin/modemmanager
+      mmcli: bin/mmcli
+      mmcli-internal: bin/mmcli-internal
+
+  modemmanager-data:
+    plugin: dump
+    source: data
+    organize:
+      copyright: usr/share/doc/modem-manager/copyright
 
   libmbim:
     plugin: autotools
