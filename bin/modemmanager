@@ -1,11 +1,15 @@
 #!/bin/sh
 
-set -e
-set -x
+set -ex
 
 # Until we've reworked the patch which adds snappy support to
 # ModemManager we keep this as a rework to make the plugin
 # loader happy and find the plugins at the right location
 export SNAP_APP_PATH=$SNAP
 
-exec $SNAP/usr/sbin/ModemManager "$@"
+LOG_LEVEL="INFO"
+if [ -f "$SNAP_DATA"/.debug_enabled ]; then
+    LOG_LEVEL="DEBUG"
+fi
+
+exec "$SNAP"/usr/sbin/ModemManager --log-level="$LOG_LEVEL" "$@"
