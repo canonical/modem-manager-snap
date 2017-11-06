@@ -7,7 +7,11 @@ table_of_contents: False
 
 Bugs can be reported [here](https://bugs.launchpad.net/snappy-hwe-snaps/+filebug).
 
-When submitting a bug report, please attach system log coming from the journal:
+If the bug can be reproduced, [enabling the debug
+output](reference/snap-configuration/debug.md) before doing so is
+highly recommended.
+
+When submitting the bug report, please attach system log coming from the journal:
 
  * $ journalctl --no-pager > system-log
 

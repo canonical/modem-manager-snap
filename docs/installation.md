@@ -68,3 +68,4 @@ we use _sudo_ with them.
  * [Gathering Modem Information](gathering-modem-information.md)
  * [Entering SIM Passwords](entering-sim-passwords.md)
  * [Configuring Cellular Connections](configuring-cellular-connections.md)
+ * [Enable Debug Support](reference/snap-configuration/debug.md)

@@ -17,6 +17,10 @@ navigation:
         location: configuring-cellular-connections.md
   - title: Reference
     children:
+      - title: Snap Configuration
+        children:
+          - title: Debug
+            location: reference/snap-configuration/debug.md
       - title: Available Commands
         location: reference/available-commands.md
       - title: DBUS API
