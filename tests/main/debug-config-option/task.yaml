@@ -1,0 +1,20 @@
+summary: Test modem-manager snap debug configuration
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    test "$(snap get modem-manager debug.enable)" = "false"
+
+    journalctl --rotate; journalctl --vacuum-time=1ms
+    snap set modem-manager debug.enable=true
+    test "$(snap get modem-manager debug.enable)" = "true"
+    test -e /var/snap/modem-manager/current/.debug_enabled
+    journalctl --no-pager -u snap.modem-manager.modemmanager.service |
+        MATCH "logging: level 'DEBUG'"
+
+    journalctl --rotate; journalctl --vacuum-time=1ms
+    snap set modem-manager debug.enable=false
+    test "$(snap get modem-manager debug.enable)" = "false"
+    test ! -e /var/snap/modem-manager/current/.debug_enabled
+    journalctl --no-pager -u snap.modem-manager.modemmanager.service |
+        MATCH "logging: level 'INFO'"

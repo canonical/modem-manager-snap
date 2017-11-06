@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -ex
+
+exec > "$SNAP_COMMON"/hook-log.txt 2>&1
+
+# $1 true/false for enabling/disabling debug log level in MM
+# We create/remove the file for future executions and also change
+# the logging level of the running daemon.
+switch_debug_enable() {
+    DEBUG_FILE=$SNAP_DATA/.debug_enabled
+    if [ "$1" = "true" ]; then
+        "$SNAP"/bin/mmcli-internal --set-logging=DEBUG
+        touch "$DEBUG_FILE"
+    else
+        "$SNAP"/bin/mmcli-internal --set-logging=INFO
+        rm -f "$DEBUG_FILE"
+    fi
+}
+
+value=$(snapctl get debug.enable)
+if [ -z "$value" ]; then
+    value="false"
+    snapctl set debug.enable="$value"
+fi
+switch_debug_enable "$value"
