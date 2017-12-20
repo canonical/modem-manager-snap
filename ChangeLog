@@ -1,0 +1,16 @@
+2017-12-20 modem-manager 1.6.2-6
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Add configure hook with debug option
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/333120
+
+  [ alfonsosanchezbeato ]
+  * See more information in merge proposal
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/324732
+
+  [ kzapalowicz ]
+  * See more information in merge proposal
+    Merge-Proposal: https://code.launchpad.net/~kzapalowicz/snappy-hwe-snaps/+git/modem-manager/+merge/324118
+  * See more information in merge proposal
+    Merge-Proposal: https://code.launchpad.net/~kzapalowicz/snappy-hwe-snaps/+git/modem-manager/+merge/325061
+
