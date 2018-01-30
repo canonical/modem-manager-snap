@@ -1,3 +1,10 @@
+2018-01-30 modem-manager 1.6.12-1
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * * Follow newer libmbim/libqmi/mm upstream versions (latest tagged versions in 2018/01/26)
+    * Add qmi/mbim test tools
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/336663
+
 2017-12-20 modem-manager 1.6.2-7
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
