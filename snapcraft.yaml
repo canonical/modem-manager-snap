@@ -30,6 +30,18 @@ apps:
     command: bin/modemmanager
     daemon: simple
     slots: [service]
+  mbimcli:
+    command: bin/mbimcli
+    slots: [service]
+  mbim-network:
+    command: bin/mbim-network
+    slots: [service]
+  qmicli:
+    command: bin/qmicli
+    slots: [service]
+  qmi-network:
+    command: bin/qmi-network
+    slots: [service]
 
 parts:
   modemmanager-hooks:
@@ -57,7 +69,7 @@ parts:
 
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-branch: libmbim/xenial/1.14.0
+    source-branch: libmbim/xenial/1.16.0
 
     configflags:
       - --with-udev
@@ -71,6 +83,8 @@ parts:
       wanted:
         - lib/libmbim-glib.so*
         - usr/lib/libmbim/mbim-proxy
+        - bin/mbimcli
+        - bin/mbim-network
 
     prime:
       - $wanted
@@ -81,7 +95,7 @@ parts:
 
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-branch: libqmi/xenial/1.16.2
+    source-branch: libqmi/xenial/1.20.0
 
     configflags:
       - --enable-mbim-qmux
@@ -95,6 +109,8 @@ parts:
       wanted:
         - lib/libqmi-glib.so*
         - usr/lib/libqmi/qmi-proxy
+        - bin/qmicli
+        - bin/qmi-network
 
     prime:
       - $wanted
@@ -105,7 +121,7 @@ parts:
 
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-branch: modem-manager/xenial/1.6.2
+    source-branch: modem-manager/xenial/1.6.12
 
     configflags:
       - --prefix=/usr
