@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.6.12-4-dev
+version: 1.8.0-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -121,7 +121,7 @@ parts:
 
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
     source-type: git
-    source-branch: modem-manager/xenial/1.6.12
+    source-branch: modem-manager/1.8.0
 
     configflags:
       - --prefix=/usr
