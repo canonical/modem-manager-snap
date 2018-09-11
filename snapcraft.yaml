@@ -74,6 +74,8 @@ parts:
     configflags:
       - --with-udev
       - --libexecdir=/usr/lib/libmbim
+      # Set explicitly CFLAGS until lp: #1791946 is solved
+      - CFLAGS=-O2
 
     build-packages:
       - libglib2.0-dev
@@ -100,6 +102,8 @@ parts:
     configflags:
       - --enable-mbim-qmux
       - --libexecdir=/usr/lib/libqmi
+      # Set explicitly CFLAGS until lp: #1791946 is solved
+      - CFLAGS=-O2 -I$SNAPCRAFT_STAGE/include
 
     build-packages:
       - intltool
@@ -132,6 +136,8 @@ parts:
       - --with-polkit=no
       - --enable-vala=no
       - --enable-tests=yes
+      # Set explicitly CFLAGS until lp: #1791946 is solved
+      - CFLAGS=-O2 -I$SNAPCRAFT_PART_INSTALL/usr/include -I$SNAPCRAFT_PART_INSTALL/usr/include/x86_64-linux-gnu -I$SNAPCRAFT_STAGE/include
 
     build-packages:
       - intltool
