@@ -1,3 +1,14 @@
+2018-09-13 modem-manager 1.8.0-1
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Move to ModemManager 1.8.0 branch
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/353837
+  * Compile wiht optimizations turned on
+    
+    Override snapcraft's CFLAGS to make sure -O2 is set and -g is not
+    (LP: #1791333).
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/354716
+
 2018-07-31 modem-manager 1.6.12-3
 
 2018-04-09 modem-manager 1.6.12-2
