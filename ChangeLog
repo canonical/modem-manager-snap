@@ -1,3 +1,11 @@
+2019-02-04 modem-manager 1.8.0-7
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * cinterion: pls62: do not run ^SGAUTH command
+    
+    See https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/362603
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/362613
+
 2018-12-10 modem-manager 1.8.0-6
 
 2018-11-22 modem-manager 1.8.0-5
