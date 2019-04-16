@@ -1,3 +1,11 @@
+2019-04-16 modem-manager 1.8.0-8
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * No-change rebuild to fix USN-3947-1 / CVE-2019-11068
+    
+    This pulls in a newer libxslt1.1 / xsltproc with fixed vulnerability.
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/366090
+
 2019-02-04 modem-manager 1.8.0-7
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
