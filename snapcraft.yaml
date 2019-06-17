@@ -81,6 +81,11 @@ parts:
       - libglib2.0-dev
       - libgudev-1.0-dev
 
+    install: |
+      # Strip binaries
+      find ../install -executable -type f | xargs file -Ni |
+          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
+
     filesets:
       wanted:
         - lib/libmbim-glib.so*
@@ -108,6 +113,11 @@ parts:
     build-packages:
       - intltool
       - libglib2.0-dev
+
+    install: |
+      # Strip binaries
+      find ../install -executable -type f | xargs file -Ni |
+          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
       wanted:
@@ -184,6 +194,9 @@ parts:
     install: |
       # Run all tests ModemManager ships by default
       make check
+      # Strip binaries
+      find ../install -executable -type f | xargs file -Ni |
+          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
       wanted:
