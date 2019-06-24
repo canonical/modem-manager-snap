@@ -1,3 +1,25 @@
+2019-06-24 modem-manager 1.8.0-10
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * * No change rebuild for USN 4014-1
+    
+      GLib vulnerability. See https://usn.ubuntu.com/4014-1/
+    
+    * cinterion: pls62: workaround serial not responding
+    
+      Do not try to deactivate the PDP context for the Gemalto PLS62-W modem,
+      let NM do the job for us. The reason is that due to a modem firmware
+      bug, if the timing between pppd and us deactivating is unfortunate, the
+      port ends up in a state in which it is unusable. Note also that this LTE
+      modem cannot really disconnect while attached, so the AT command always
+      returns an error anyway.
+    
+      To perform this, the disconnect 3gpp functions have been implemented
+      in the PLS62 bearer. Fixes LP: #1829293.
+    
+      See https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/369240
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/369256
+
 2019-06-19 modem-manager 1.8.0-9
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
