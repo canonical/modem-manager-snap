@@ -1,0 +1,8 @@
+parts
+prime
+stage
+snap
+.tests-extras
+.spread-reuse*
+*.snap
+*.swp
