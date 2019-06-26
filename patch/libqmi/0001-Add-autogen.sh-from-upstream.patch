@@ -1,0 +1,43 @@
+From 303c5ce1da5a75daa576efcd928b94999dfa7f7d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Wed, 26 Jun 2019 17:54:33 +0200
+Subject: [PATCH] Add autogen.sh from upstream
+
+For some weird reason this was not in the debian source package.
+---
+ autogen.sh | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100755 autogen.sh
+
+diff --git a/autogen.sh b/autogen.sh
+new file mode 100755
+index 0000000..7a44906
+--- /dev/null
++++ b/autogen.sh
+@@ -0,0 +1,22 @@
++#!/bin/sh
++# Run this to generate all the initial makefiles, etc.
++
++srcdir=`dirname $0`
++test -z "$srcdir" && srcdir=.
++REQUIRED_AUTOMAKE_VERSION=1.9
++PKG_NAME=libqmi
++
++(test -f $srcdir/configure.ac \
++  && test -f $srcdir/src/libqmi-glib/libqmi-glib.h) || {
++    echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
++    echo " top-level $PKG_NAME directory"
++    exit 1
++}
++
++(cd $srcdir;
++    autoreconf --force --install --verbose
++)
++
++if test -z "$NOCONFIGURE"; then
++    $srcdir/configure --enable-maintainer-mode "$@"
++fi
+-- 
+2.17.1
+

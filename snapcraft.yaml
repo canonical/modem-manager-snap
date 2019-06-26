@@ -1,0 +1,241 @@
+name: modem-manager
+version: 1.10.0-1-dev
+summary: ModemManager is a service which controls mobile broadband
+description: |
+  ModemManager is a DBus-activated daemon which controls mobile broadband
+  (2G/3G/4G) devices and connections. Whether built-in devices, USB dongles,
+  bluetooth-paired telephones or professional RS232/USB devices with external
+  power supplies, ModemManager is able to prepare and configure the modems and
+  setup connections with them.
+  Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+confinement: strict
+grade: stable
+base: core18
+
+slots:
+  service: modem-manager
+
+plugs:
+  mmcli: modem-manager
+
+hooks:
+  configure:
+    plugs: [mmcli]
+
+apps:
+  mmcli:
+    command: bin/mmcli
+    plugs: [mmcli]
+  modemmanager:
+    command: bin/modemmanager
+    daemon: simple
+    slots: [service]
+  mbimcli:
+    command: bin/mbimcli
+    slots: [service]
+  mbim-network:
+    command: bin/mbim-network
+    slots: [service]
+  qmicli:
+    command: bin/qmicli
+    slots: [service]
+  qmi-network:
+    command: bin/qmi-network
+    slots: [service]
+
+parts:
+  modemmanager-hooks:
+    plugin: dump
+    source: hooks
+    organize:
+      configure: meta/hooks/configure
+
+  modemmanager-bin:
+    plugin: dump
+    source: bin
+    organize:
+      modemmanager: bin/modemmanager
+      mmcli: bin/mmcli
+      mmcli-internal: bin/mmcli-internal
+
+  modemmanager-data:
+    plugin: dump
+    source: data
+    organize:
+      copyright: usr/share/doc/modem-manager/copyright
+
+  libmbim:
+    plugin: autotools
+
+    source: https://git.launchpad.net/ubuntu/+source/libmbim
+    source-type: git
+    source-branch: applied/1.18.0-1_ubuntu18.04.1
+
+    configflags:
+      - --with-udev
+      - --libexecdir=/usr/lib/libmbim
+      # Set explicitly CFLAGS until lp: #1791946 is solved
+      - CFLAGS=-O2
+
+    build-packages:
+      - libglib2.0-dev
+      - libgudev-1.0-dev
+
+    override-pull: |
+      snapcraftctl pull
+      git config user.email "snapcraft@canonical.com"
+      git config user.name "snapcraft"
+      git am ../../../patch/libmbim/*.patch
+
+    override-build: |
+      ./autogen.sh
+      snapcraftctl build
+      # Strip binaries
+      find ../install -executable -type f | xargs file -Ni |
+          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
+
+    filesets:
+      wanted:
+        - lib/libmbim-glib.so*
+        - usr/lib/libmbim/mbim-proxy
+        - bin/mbimcli
+        - bin/mbim-network
+
+    prime:
+      - $wanted
+
+  libqmi:
+    after: [ libmbim ]
+    plugin: autotools
+
+    source: https://git.launchpad.net/ubuntu/+source/libqmi
+    source-type: git
+    source-branch: applied/1.22.0-1.2_ubuntu18.04.1
+
+    configflags:
+      - --enable-mbim-qmux
+      - --libexecdir=/usr/lib/libqmi
+      # Set explicitly CFLAGS until lp: #1791946 is solved
+      - CFLAGS=-O2 -I$SNAPCRAFT_STAGE/include
+
+    build-packages:
+      - intltool
+      - libglib2.0-dev
+
+    override-pull: |
+      snapcraftctl pull
+      git config user.email "snapcraft@canonical.com"
+      git config user.name "snapcraft"
+      git am ../../../patch/libqmi/*.patch
+
+    override-build: |
+      ./autogen.sh
+      snapcraftctl build
+      # Strip binaries
+      find ../install -executable -type f | xargs file -Ni |
+          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
+
+    filesets:
+      wanted:
+        - lib/libqmi-glib.so*
+        - usr/lib/libqmi/qmi-proxy
+        - bin/qmicli
+        - bin/qmi-network
+
+    prime:
+      - $wanted
+
+  modemmanager:
+    after: [ libmbim, libqmi ]
+    plugin: autotools
+
+    source: https://git.launchpad.net/ubuntu/+source/modemmanager
+    source-type: git
+    source-branch: applied/1.10.0-1_ubuntu18.04.2
+
+    configflags:
+      - --prefix=/usr
+      - --libdir=/usr/lib
+      - --libexecdir=/usr/lib/ModemManager
+      - --sysconfdir=/etc
+      - --enable-gtk-doc=no
+      - --with-polkit=no
+      - --enable-vala=no
+      - --enable-tests=yes
+      # Set explicitly CFLAGS until lp: #1791946 is solved
+      - CFLAGS=-O2 -I$SNAPCRAFT_PART_INSTALL/usr/include -I$SNAPCRAFT_PART_INSTALL/usr/include/x86_64-linux-gnu -I$SNAPCRAFT_STAGE/include
+
+    build-packages:
+      - intltool
+      - gtk-doc-tools
+      - libdbus-glib-1-dev
+      - libdbus-1-dev
+      - libiw-dev
+      - libglib2.0-dev
+      - libnl-3-dev
+      - libnl-route-3-dev
+      - libnl-genl-3-dev
+      - libnss3-dev
+      - libgnutls28-dev
+      - libgcrypt11-dev
+      - libxml-parser-perl
+      - uuid-dev
+      - libsystemd-dev
+      - libudev-dev
+      - libgudev-1.0-dev
+      - libgirepository1.0-dev
+      - gobject-introspection
+      - libsoup2.4-dev
+      - libglib2.0-doc
+      - libmm-glib-dev
+      - libndp-dev
+      - libreadline-dev
+      - libnewt-dev
+      - dbus-test-runner
+      - python-dbus
+      - python-gi
+
+    stage-packages:
+      - automake
+      - libtool
+      - intltool
+      - gtk-doc-tools
+      - gnome-common
+      - gobject-introspection
+      - libgirepository1.0-dev
+      - libglib2.0-dev
+      - libgudev-1.0-dev
+      - libglib2.0-doc
+
+    override-build: |
+      ./autogen.sh
+      snapcraftctl build
+      # Run all tests ModemManager ships by default
+      make check
+      # Strip binaries
+      find ../install -executable -type f | xargs file -Ni |
+          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
+
+    filesets:
+      wanted:
+        - usr/bin/mmcli
+        - usr/sbin/ModemManager
+        - usr/lib/ModemManager/
+        - usr/lib/*/libgudev-1.0.so*
+        - usr/lib/libmm-glib.so*
+        - usr/share/doc/libgudev-1.0-0/
+        # Following libraries could also be pulled from core
+        - usr/lib/*/libgmodule-2.0.so*
+        - usr/lib/*/libgio-2.0.so*
+        - usr/lib/*/libgobject-2.0.so*
+        - usr/lib/*/libglib-2.0.so*
+        - usr/lib/*/libffi.so*
+        - usr/lib/*/libpcre.so*
+        - lib/*/libglib-2.0.so*
+        - lib/*/libpcre.so*
+        - usr/share/doc/libglib2.0-*
+        - usr/share/doc/libffi6/
+        - usr/share/doc/libpcre*
+
+    prime:
+      - $wanted
