@@ -1,0 +1,162 @@
+From 3ae33f29a6a50c036a40406b4e132035ae88b6f9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Fri, 1 Feb 2019 14:18:41 +0100
+Subject: [PATCH 14/17] cinerion: pls62: do not run ^SGAUTH command
+
+As this modem does not support SWWAN and uses PPP instead of an eth-type
+connection, the call to SGAUTH is not supported either. The user and
+password need to be used by pppd instead.
+---
+ plugins/cinterion/mm-broadband-bearer-pls62.c | 116 ------------------
+ 1 file changed, 116 deletions(-)
+
+diff --git a/plugins/cinterion/mm-broadband-bearer-pls62.c b/plugins/cinterion/mm-broadband-bearer-pls62.c
+index e902ce2..3d9b147 100644
+--- a/plugins/cinterion/mm-broadband-bearer-pls62.c
++++ b/plugins/cinterion/mm-broadband-bearer-pls62.c
+@@ -31,81 +31,11 @@
+ 
+ G_DEFINE_TYPE (MMBroadbandBearerPls62, mm_broadband_bearer_pls62, MM_TYPE_BROADBAND_BEARER)
+ 
+-/*****************************************************************************/
+-/* Auth helpers */
+-
+-typedef enum {
+-    BEARER_PLS62_AUTH_UNKNOWN   = -1,
+-    BEARER_PLS62_AUTH_NONE      =  0,
+-    BEARER_PLS62_AUTH_PAP       =  1,
+-    BEARER_PLS62_AUTH_CHAP      =  2,
+-    BEARER_PLS62_AUTH_MSCHAPV2  =  3,
+-} BearerPls62AuthType;
+-
+-static BearerPls62AuthType
+-parse_auth_type (MMBearerAllowedAuth mm_auth)
+-{
+-    switch (mm_auth) {
+-    case MM_BEARER_ALLOWED_AUTH_NONE:
+-        return BEARER_PLS62_AUTH_NONE;
+-    case MM_BEARER_ALLOWED_AUTH_PAP:
+-        return BEARER_PLS62_AUTH_PAP;
+-    case MM_BEARER_ALLOWED_AUTH_CHAP:
+-        return BEARER_PLS62_AUTH_CHAP;
+-    case MM_BEARER_ALLOWED_AUTH_MSCHAPV2:
+-        return BEARER_PLS62_AUTH_MSCHAPV2;
+-    default:
+-        return BEARER_PLS62_AUTH_UNKNOWN;
+-    }
+-}
+-
+-/* AT^SGAUTH=<cid>[, <auth_type>[, <passwd>, <user>]] */
+-static gchar *
+-build_auth_string (MMBearerProperties *config,
+-                   guint               cid)
+-{
+-    const gchar             *user;
+-    const gchar             *passwd;
+-    gboolean                 has_user;
+-    gboolean                 has_passwd;
+-    MMBearerAllowedAuth      auth;
+-    BearerPls62AuthType  encoded_auth = BEARER_PLS62_AUTH_UNKNOWN;
+-
+-    user   = mm_bearer_properties_get_user         (config);
+-    passwd = mm_bearer_properties_get_password     (config);
+-    auth   = mm_bearer_properties_get_allowed_auth (config);
+-
+-    has_user     = (user   && user[0]);
+-    has_passwd   = (passwd && passwd[0]);
+-    encoded_auth = parse_auth_type (auth);
+-
+-    /* When 'none' requested, we won't require user/password */
+-    if (encoded_auth == BEARER_PLS62_AUTH_NONE) {
+-        if (has_user || has_passwd)
+-            mm_warn ("APN user/password given but 'none' authentication requested");
+-        return g_strdup_printf ("^SGAUTH=%u,%d", cid, encoded_auth);
+-    }
+-
+-    /* No explicit auth type requested? */
+-    if (encoded_auth == BEARER_PLS62_AUTH_UNKNOWN) {
+-        /* If no user/passwd given, do nothing */
+-        if (!has_user && !has_passwd)
+-            return NULL;
+-
+-        /* If user/passwd given, default to PAP */
+-        mm_dbg ("APN user/password given but no authentication type explicitly requested: defaulting to 'PAP'");
+-        encoded_auth = BEARER_PLS62_AUTH_PAP;
+-    }
+-
+-    return g_strdup_printf ("^SGAUTH=%u,%d,%s,%s", cid, encoded_auth, passwd, user);
+-}
+-
+ /******************************************************************************/
+ /* Dial 3GPP */
+ 
+ typedef enum {
+     DIAL_3GPP_CONTEXT_STEP_FIRST = 0,
+-    DIAL_3GPP_CONTEXT_STEP_AUTH,
+     DIAL_3GPP_CONTEXT_STEP_START_CONNECTION,
+     DIAL_3GPP_CONTEXT_STEP_LAST,
+ } Dial3gppContextStep;
+@@ -139,27 +69,6 @@ dial_3gpp_finish (MMBroadbandBearer  *self,
+ 
+ static void dial_3gpp_context_step (GTask *task);
+ 
+-static void
+-common_dial_operation_ready (MMBaseModem  *modem,
+-                             GAsyncResult *res,
+-                             GTask        *task)
+-{
+-    Dial3gppContext *ctx;
+-    GError          *error = NULL;
+-
+-    ctx = (Dial3gppContext *) g_task_get_task_data (task);
+-
+-    if (!mm_base_modem_at_command_full_finish (modem, res, &error)) {
+-        g_task_return_error (task, error);
+-        g_object_unref (task);
+-        return;
+-    }
+-
+-    /* Go to next step */
+-    ctx->step++;
+-    dial_3gpp_context_step (task);
+-}
+-
+ static void
+ parent_dial_3gpp_ready (MMBroadbandBearer *self,
+                         GAsyncResult *res,
+@@ -323,31 +232,6 @@ dial_3gpp_context_step (GTask *task)
+         }
+         /* Fall down to next step */
+         ctx->step++;
+-    case DIAL_3GPP_CONTEXT_STEP_AUTH: {
+-        gchar *command;
+-
+-        command = build_auth_string (mm_base_bearer_peek_config (MM_BASE_BEARER (ctx->self)), ctx->cid);
+-        if (command) {
+-            mm_dbg ("cinterion dial step %u/%u: authenticating...", ctx->step, DIAL_3GPP_CONTEXT_STEP_LAST);
+-            /* Send SGAUTH write, if User & Pass are provided.
+-             * advance to next state by callback */
+-            mm_base_modem_at_command_full (ctx->modem,
+-                                           ctx->primary,
+-                                           command,
+-                                           10,
+-                                           FALSE,
+-                                           FALSE,
+-                                           NULL,
+-                                           (GAsyncReadyCallback)common_dial_operation_ready,
+-                                           task);
+-            g_free (command);
+-            return;
+-        }
+-
+-        /* Fall down to next step */
+-        mm_dbg ("cinterion dial step %u/%u: authentication not required", ctx->step, DIAL_3GPP_CONTEXT_STEP_LAST);
+-        ctx->step++;
+-    }
+     case DIAL_3GPP_CONTEXT_STEP_START_CONNECTION:
+         /* Chain up to parent's dialling */
+         MM_BROADBAND_BEARER_CLASS (mm_broadband_bearer_pls62_parent_class)->dial_3gpp (
+-- 
+2.17.1
+

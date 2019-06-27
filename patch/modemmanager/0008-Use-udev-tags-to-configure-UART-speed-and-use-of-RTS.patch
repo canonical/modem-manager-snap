@@ -1,0 +1,97 @@
+From fdb58a922d705ab011865cdaba0ef9f75e5419d1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Thu, 26 Jul 2018 20:44:43 +0200
+Subject: [PATCH 08/17] Use udev tags to configure UART speed and use of
+ RTS/CTS
+
+ID_MM_BAUD_RATE and ID_MM_RTSCTS_PORT udev tags can be used with this
+change to set UART speed and to use RTS/CTS handshaking if desired.
+---
+ src/mm-port-serial.c | 44 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 43 insertions(+), 1 deletion(-)
+
+diff --git a/src/mm-port-serial.c b/src/mm-port-serial.c
+index d739313..acb1aa5 100644
+--- a/src/mm-port-serial.c
++++ b/src/mm-port-serial.c
+@@ -27,6 +27,7 @@
+ #include <sys/ioctl.h>
+ #include <string.h>
+ #include <linux/serial.h>
++#include <gudev/gudev.h>
+ 
+ #include <gio/gunixsocketaddress.h>
+ 
+@@ -456,11 +457,48 @@ real_config_fd (MMPortSerial *self, int fd, GError **error)
+     gint bits;
+     gint parity;
+     gint stopbits;
++    GUdevClient *client;
++    const gchar *device;
++    gboolean wants_rts_cts = FALSE;
++
++    device = mm_port_get_device (MM_PORT (self));
+ 
+     /* No setup if not a tty */
+     if (mm_port_get_subsys (MM_PORT (self)) != MM_PORT_SUBSYS_TTY)
+         return TRUE;
+ 
++    /* Get udev properties for usage of RTS/CTS and speed */
++    client = g_udev_client_new (NULL);
++    if (client) {
++        GUdevDevice *port_device;
++
++        port_device =
++            g_udev_client_query_by_subsystem_and_name (client, "tty", device);
++
++        if (port_device) {
++            const gchar *bauds;
++
++            wants_rts_cts =
++                g_udev_device_get_property_as_boolean (port_device,
++                                                       "ID_MM_RTSCTS_PORT");
++            bauds = g_udev_device_get_property (port_device, "ID_MM_BAUD_RATE");
++            if (bauds) {
++                guint speed = (guint) strtol (bauds, NULL, 10);
++                if (speed)
++                    self->priv->baud = speed;
++                else
++                    mm_warn ("(%s) invalid ID_MM_BAUD_RATE=%s", device, bauds);
++            }
++            g_object_unref (port_device);
++        }
++
++        g_object_unref (client);
++    }
++
++
++    mm_dbg ("(%s) using RTSCTS %d bauds %u",
++            device, wants_rts_cts, self->priv->baud);
++
+     mm_dbg ("(%s): setting up baudrate: %u",
+             mm_port_get_device (MM_PORT (self)),
+             self->priv->baud);
+@@ -482,7 +520,7 @@ real_config_fd (MMPortSerial *self, int fd, GError **error)
+                  errno);
+     }
+ 
+-    stbuf.c_cflag &= ~(CBAUD | CSIZE | CSTOPB | PARENB | PARODD | CRTSCTS);
++    stbuf.c_cflag &= ~(CBAUD | CSIZE | CSTOPB | PARENB | PARODD);
+     stbuf.c_iflag &= ~(IGNCR | ICRNL | IUCLC | INPCK | IXON | IXOFF | IXANY );
+     stbuf.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONLRET);
+     stbuf.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL);
+@@ -495,6 +533,10 @@ real_config_fd (MMPortSerial *self, int fd, GError **error)
+ 
+     /* Set up port speed and serial attributes and enable receiver in local mode */
+     stbuf.c_cflag |= (bits | parity | stopbits | CLOCAL | CREAD);
++    if (wants_rts_cts)
++        stbuf.c_cflag |= CRTSCTS;
++    else
++        stbuf.c_cflag &= ~CRTSCTS;
+ 
+     errno = 0;
+     if (cfsetispeed (&stbuf, speed) != 0) {
+-- 
+2.17.1
+

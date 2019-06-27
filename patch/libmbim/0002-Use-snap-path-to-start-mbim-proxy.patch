@@ -1,0 +1,45 @@
+From 1243c8b6a805ba25ed136f4c8ac4328218f20f42 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonsosanchezbeato@yahoo.es>
+Date: Thu, 22 Dec 2016 18:06:44 +0100
+Subject: [PATCH] Use snap path to start mbim-proxy
+
+---
+ src/libmbim-glib/mbim-device.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/src/libmbim-glib/mbim-device.c b/src/libmbim-glib/mbim-device.c
+index 113fd36..f79226e 100644
+--- a/src/libmbim-glib/mbim-device.c
++++ b/src/libmbim-glib/mbim-device.c
+@@ -1195,6 +1195,8 @@ create_iochannel_with_socket (GTask *task)
+     if (!self->priv->socket_connection) {
+         gchar **argc;
+         GSource *source;
++        const gchar *snap_path;
++        gchar *mbim_proxy_path;
+ 
+         g_debug ("cannot connect to proxy: %s", error->message);
+         g_clear_error (&error);
+@@ -1213,8 +1215,17 @@ create_iochannel_with_socket (GTask *task)
+ 
+         g_debug ("spawning new mbim-proxy (try %u)...", ctx->spawn_retries);
+ 
++        mbim_proxy_path = g_malloc (PATH_MAX);
++        snap_path = g_getenv ("SNAP");
++        if (snap_path)
++            g_snprintf(mbim_proxy_path, PATH_MAX, "%s%s/mbim-proxy",
++                       snap_path, LIBEXEC_PATH);
++        else
++            g_snprintf(mbim_proxy_path, PATH_MAX, "%s/mbim-proxy",
++                       LIBEXEC_PATH);
++
+         argc = g_new0 (gchar *, 2);
+-        argc[0] = g_strdup (LIBEXEC_PATH "/mbim-proxy");
++        argc[0] = mbim_proxy_path; /* Freed by g_strfreev */
+         if (!g_spawn_async (NULL, /* working directory */
+                             argc,
+                             NULL, /* envp */
+-- 
+2.17.1
+

@@ -1,0 +1,43 @@
+From 1d28733f7242e68f4c9e8350afb73c9ad4ba0906 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Fri, 21 Apr 2017 12:19:50 +0200
+Subject: [PATCH 07/17] plugins: dell: always probe AT ports
+
+Previously, probing or not the commands depended on a race condition,
+and, besides, we need the AT ports for implementing workarounds for
+Sierra HL7588. Therefore, we make sure we always probe the AT ports in
+the Dell plugin, even when an MBIM port has already been detected.
+---
+ plugins/dell/mm-plugin-dell.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/plugins/dell/mm-plugin-dell.c b/plugins/dell/mm-plugin-dell.c
+index 4e528cc..d49373b 100644
+--- a/plugins/dell/mm-plugin-dell.c
++++ b/plugins/dell/mm-plugin-dell.c
+@@ -270,6 +270,13 @@ custom_init_step (GTask *task)
+ 
+ #if defined WITH_MBIM
+     /* If device has a MBIM port, don't run anything else, as we don't care */
++    /* CANONICAL We need the AT ports for the Sierra HL7588 workarounds. Anyway,
++     * doing this was not a great idea as actually probing or not the ports
++     * depended on a race condition (bug LP: #1685722). Leaving this commented
++     * out to not forget about this and rethink in case we can remove the
++     * workarounds. TODO upstream?
++     */
++#if 0
+     if (mm_port_probe_list_has_mbim_port (mm_device_peek_port_probe_list (mm_port_probe_peek_device (probe)))) {
+         mm_dbg ("(Dell) no need to run custom init in (%s): device has MBIM port",
+                 mm_port_get_device (MM_PORT (ctx->port)));
+@@ -277,6 +284,7 @@ custom_init_step (GTask *task)
+         g_object_unref (task);
+         return;
+     }
++#endif
+ #endif
+ 
+     if (ctx->timeouts >= MAX_PORT_PROBE_TIMEOUTS) {
+-- 
+2.17.1
+

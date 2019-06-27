@@ -1,0 +1,145 @@
+From b3d69deccb629f3b2fb9dce6d0b6e0f02d7a4926 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Mon, 27 Aug 2018 11:12:38 +0200
+Subject: [PATCH 05/17] Send +CGACT for Sierra HL7588 on connection
+
+Sent AT+CGACT=1,3 command for Sierra HL7588 on connection as a
+workaround for buggy modem firmware. This makes sure vzwinternet
+is activated.
+
+This workaround is executed for both Sierra and Dell VID/PID, but
+an additional twist is needed for the later, as Dell reused same
+VID/PID for a Telit modem, so we additionally check the ouput of
+AT+CGMM.
+---
+ src/mm-bearer-mbim.c | 92 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 92 insertions(+)
+
+diff --git a/src/mm-bearer-mbim.c b/src/mm-bearer-mbim.c
+index a776c7f..2ca911a 100644
+--- a/src/mm-bearer-mbim.c
++++ b/src/mm-bearer-mbim.c
+@@ -31,6 +31,12 @@
+ #include "mm-port-enums-types.h"
+ #include "mm-bearer-mbim.h"
+ #include "mm-log.h"
++#include "mm-base-modem-at.h"
++
++#define VID_SIERRA_HL7588 0x413C
++#define PID_SIERRA_HL7588 0x81C8
++#define VID_SIERRA_HL7588_DELL 0x1519
++#define PID_SIERRA_HL7588_DELL 0x0443
+ 
+ G_DEFINE_TYPE (MMBearerMbim, mm_bearer_mbim, MM_TYPE_BASE_BEARER)
+ 
+@@ -209,6 +215,7 @@ reload_stats (MMBaseBearer *self,
+ 
+ typedef enum {
+     CONNECT_STEP_FIRST,
++    CONNECT_STEP_SEND_SIERRA_WORKAROUND,
+     CONNECT_STEP_PACKET_SERVICE,
+     CONNECT_STEP_PROVISIONED_CONTEXTS,
+     CONNECT_STEP_CHECK_DISCONNECTED,
+@@ -745,6 +752,61 @@ provisioned_contexts_query_ready (MbimDevice *device,
+     connect_context_step (task);
+ }
+ 
++static void
++workaround_done (MMBaseModem *modem,
++                 GAsyncResult *res,
++                 GTask *task)
++{
++    ConnectContext *ctx;
++
++    ctx = g_task_get_task_data (task);
++
++    /* Not really worth checking for errors here */
++    mm_dbg ("Sierra HL7588 workaround command finished");
++
++    /* Keep on */
++    ctx->step++;
++    connect_context_step (task);
++}
++
++static void
++check_model_id_done (MMBaseModem *modem,
++                     GAsyncResult *res,
++                     GTask *task)
++{
++    const gchar *response;
++    GError *error = NULL;
++    ConnectContext *ctx;
++
++    ctx = g_task_get_task_data (task);
++
++    response = mm_base_modem_at_command_finish (modem, res, &error);
++    if (!error && g_strcmp0 ("HL7588", response) == 0) {
++        mm_dbg ("Sending workaround AT command for Sierra HL7588...");
++        mm_base_modem_at_command (modem,
++                                  "AT+CGACT=1,3",
++                                  10,
++                                  FALSE,
++                                  (GAsyncReadyCallback)workaround_done,
++                                  task);
++        return;
++    }
++
++    /* Keep on */
++    ctx->step++;
++    connect_context_step (task);
++}
++
++static unsigned
++get_uint_property (GObject *obj, const gchar *property_name)
++{
++    GValue value = G_VALUE_INIT;
++
++    g_value_init (&value, G_TYPE_UINT);
++    g_object_get_property (obj, property_name, &value);
++    return g_value_get_uint (&value);
++}
++
+ static void
+ packet_service_set_ready (MbimDevice *device,
+                           GAsyncResult *res,
+@@ -842,6 +904,36 @@ connect_context_step (GTask *task)
+         /* Fall down */
+         ctx->step++;
+ 
++    case CONNECT_STEP_SEND_SIERRA_WORKAROUND: {
++        MMBaseModem *modem = NULL;
++        unsigned vid, pid;
++
++        g_object_get (self,
++                      MM_BASE_BEARER_MODEM, &modem,
++                      NULL);
++        g_assert (modem);
++
++        vid = get_uint_property (G_OBJECT (modem), MM_BASE_MODEM_VENDOR_ID);
++        pid = get_uint_property (G_OBJECT (modem), MM_BASE_MODEM_PRODUCT_ID);
++
++        mm_dbg ("Checking if Sierra HL7588: %x:%x", vid, pid);
++
++        if ((vid == VID_SIERRA_HL7588 && pid == PID_SIERRA_HL7588) ||
++            (vid == VID_SIERRA_HL7588_DELL && pid == PID_SIERRA_HL7588_DELL)) {
++            mm_base_modem_at_command (modem,
++                                      "AT+CGMM",
++                                      3,
++                                      TRUE,
++                                      (GAsyncReadyCallback)check_model_id_done,
++                                      task);
++            g_object_unref (modem);
++            return;
++        }
++
++        g_object_unref (modem);
++        /* Fall down */
++        ctx->step++;
++    }
+     case CONNECT_STEP_PACKET_SERVICE: {
+         GError *error = NULL;
+ 
+-- 
+2.17.1
+

@@ -1,0 +1,51 @@
+From 54c3d4138d137c07cba5deffdb236717487c2e08 Mon Sep 17 00:00:00 2001
+From: Simon Fels <simon.fels@canonical.com>
+Date: Tue, 17 May 2016 15:27:24 +0200
+Subject: [PATCH 01/17] Add support for Ubuntu Core
+
+Snappy relocates every app to an app specific location and therefor
+we need adjustments to load our plugins from the correct location.
+---
+ src/mm-context.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/src/mm-context.c b/src/mm-context.c
+index 061c5c9..358c716 100644
+--- a/src/mm-context.c
++++ b/src/mm-context.c
+@@ -22,6 +22,8 @@
+ 
+ #include "mm-context.h"
+ 
++#include <glib/gprintf.h>
++
+ /*****************************************************************************/
+ /* Application context */
+ 
+@@ -271,7 +273,22 @@ mm_context_get_test_enable (void)
+ const gchar *
+ mm_context_get_test_plugin_dir (void)
+ {
+-    return test_plugin_dir ? test_plugin_dir : PLUGINDIR;
++    /* Snappy has no constant installation prefix so the plugin directory is
++     * always relative to the top-level installation directory of the snap. The
++     * top level directory is available in the SNAP_APP_PATH environment
++     * variable. */
++    static gchar plugin_dir[PATH_MAX] = {0};
++    /* Compute plugin_dir at most once */
++    if (!*plugin_dir) { /* XXX: this test is not thread safe */
++        const gchar *SNAP_APP_PATH = NULL;
++        SNAP_APP_PATH = g_getenv("SNAP_APP_PATH");
++        if (SNAP_APP_PATH)
++            g_snprintf(plugin_dir, sizeof plugin_dir, "%s/%s",
++                       SNAP_APP_PATH, g_path_skip_root(PLUGINDIR));
++        else
++            g_snprintf(plugin_dir, sizeof plugin_dir, "%s", PLUGINDIR);
++    }
++    return test_plugin_dir ? test_plugin_dir : plugin_dir;
+ }
+ 
+ /*****************************************************************************/
+-- 
+2.17.1
+
