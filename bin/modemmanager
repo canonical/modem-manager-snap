@@ -14,4 +14,5 @@ if [ -f "$SNAP_DATA"/.debug_enabled ]; then
     DEBUG="--debug"
 fi
 
-exec "$SNAP"/usr/sbin/ModemManager $DEBUG --log-level="$LOG_LEVEL" "$@"
+exec "$SNAP"/usr/sbin/ModemManager --filter-policy=STRICT \
+     $DEBUG --log-level="$LOG_LEVEL" "$@"
