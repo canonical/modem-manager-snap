@@ -1,0 +1,5 @@
+summary: Verify mmcli requires root to be executed
+
+execute: |
+    ! sudo -u $TEST_USER /snap/bin/mmcli
+    sudo -u $TEST_USER /snap/bin/mmcli | grep "ERROR: You're not running mmcli as root which is required."
