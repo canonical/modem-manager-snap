@@ -1,0 +1,620 @@
+From 90271c2dce45d2041c5372671a4176a210dec722 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Mon, 19 Nov 2018 13:37:16 +0100
+Subject: [PATCH 12/17] cinterion: add bearer for PLS62
+
+This new bearer handles PLS62 LTE attachment, which is quite special as
+it tries always to start a context at the same times it attaches. It
+also tries to use by default CID 1 for this. What we do is to try always
+to use CID 1, and if the required APN does not match it, we change CID 1
+to that APN. If that happens, we also re-trigger the attach procedure so
+the modem uses the right APN finally.
+---
+ plugins/Makefile.am                           |   2 +
+ plugins/cinterion/mm-broadband-bearer-pls62.c | 455 ++++++++++++++++++
+ plugins/cinterion/mm-broadband-bearer-pls62.h |  57 +++
+ .../cinterion/mm-broadband-modem-cinterion.c  |  25 +-
+ 4 files changed, 536 insertions(+), 3 deletions(-)
+ create mode 100644 plugins/cinterion/mm-broadband-bearer-pls62.c
+ create mode 100644 plugins/cinterion/mm-broadband-bearer-pls62.h
+
+diff --git a/plugins/Makefile.am b/plugins/Makefile.am
+index 5b91e61..5dac123 100644
+--- a/plugins/Makefile.am
++++ b/plugins/Makefile.am
+@@ -678,6 +678,8 @@ libmm_plugin_cinterion_la_SOURCES = \
+ 	cinterion/mm-broadband-modem-cinterion.h \
+ 	cinterion/mm-broadband-bearer-cinterion.c \
+ 	cinterion/mm-broadband-bearer-cinterion.h \
++	cinterion/mm-broadband-bearer-pls62.c \
++	cinterion/mm-broadband-bearer-pls62.h \
+ 	$(NULL)
+ if WITH_QMI
+ libmm_plugin_cinterion_la_SOURCES += \
+diff --git a/plugins/cinterion/mm-broadband-bearer-pls62.c b/plugins/cinterion/mm-broadband-bearer-pls62.c
+new file mode 100644
+index 0000000..e902ce2
+--- /dev/null
++++ b/plugins/cinterion/mm-broadband-bearer-pls62.c
+@@ -0,0 +1,455 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2018 Canonical Ltd
++ * Author: Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com>
++ */
++
++#include <config.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <ctype.h>
++#include <arpa/inet.h>
++#include <ModemManager.h>
++#include "mm-base-modem-at.h"
++#include "mm-broadband-bearer-pls62.h"
++#include "mm-log.h"
++#include "mm-modem-helpers.h"
++#include "mm-modem-helpers-cinterion.h"
++#include "mm-daemon-enums-types.h"
++
++G_DEFINE_TYPE (MMBroadbandBearerPls62, mm_broadband_bearer_pls62, MM_TYPE_BROADBAND_BEARER)
++
++/*****************************************************************************/
++/* Auth helpers */
++
++typedef enum {
++    BEARER_PLS62_AUTH_UNKNOWN   = -1,
++    BEARER_PLS62_AUTH_NONE      =  0,
++    BEARER_PLS62_AUTH_PAP       =  1,
++    BEARER_PLS62_AUTH_CHAP      =  2,
++    BEARER_PLS62_AUTH_MSCHAPV2  =  3,
++} BearerPls62AuthType;
++
++static BearerPls62AuthType
++parse_auth_type (MMBearerAllowedAuth mm_auth)
++{
++    switch (mm_auth) {
++    case MM_BEARER_ALLOWED_AUTH_NONE:
++        return BEARER_PLS62_AUTH_NONE;
++    case MM_BEARER_ALLOWED_AUTH_PAP:
++        return BEARER_PLS62_AUTH_PAP;
++    case MM_BEARER_ALLOWED_AUTH_CHAP:
++        return BEARER_PLS62_AUTH_CHAP;
++    case MM_BEARER_ALLOWED_AUTH_MSCHAPV2:
++        return BEARER_PLS62_AUTH_MSCHAPV2;
++    default:
++        return BEARER_PLS62_AUTH_UNKNOWN;
++    }
++}
++
++/* AT^SGAUTH=<cid>[, <auth_type>[, <passwd>, <user>]] */
++static gchar *
++build_auth_string (MMBearerProperties *config,
++                   guint               cid)
++{
++    const gchar             *user;
++    const gchar             *passwd;
++    gboolean                 has_user;
++    gboolean                 has_passwd;
++    MMBearerAllowedAuth      auth;
++    BearerPls62AuthType  encoded_auth = BEARER_PLS62_AUTH_UNKNOWN;
++
++    user   = mm_bearer_properties_get_user         (config);
++    passwd = mm_bearer_properties_get_password     (config);
++    auth   = mm_bearer_properties_get_allowed_auth (config);
++
++    has_user     = (user   && user[0]);
++    has_passwd   = (passwd && passwd[0]);
++    encoded_auth = parse_auth_type (auth);
++
++    /* When 'none' requested, we won't require user/password */
++    if (encoded_auth == BEARER_PLS62_AUTH_NONE) {
++        if (has_user || has_passwd)
++            mm_warn ("APN user/password given but 'none' authentication requested");
++        return g_strdup_printf ("^SGAUTH=%u,%d", cid, encoded_auth);
++    }
++
++    /* No explicit auth type requested? */
++    if (encoded_auth == BEARER_PLS62_AUTH_UNKNOWN) {
++        /* If no user/passwd given, do nothing */
++        if (!has_user && !has_passwd)
++            return NULL;
++
++        /* If user/passwd given, default to PAP */
++        mm_dbg ("APN user/password given but no authentication type explicitly requested: defaulting to 'PAP'");
++        encoded_auth = BEARER_PLS62_AUTH_PAP;
++    }
++
++    return g_strdup_printf ("^SGAUTH=%u,%d,%s,%s", cid, encoded_auth, passwd, user);
++}
++
++/******************************************************************************/
++/* Dial 3GPP */
++
++typedef enum {
++    DIAL_3GPP_CONTEXT_STEP_FIRST = 0,
++    DIAL_3GPP_CONTEXT_STEP_AUTH,
++    DIAL_3GPP_CONTEXT_STEP_START_CONNECTION,
++    DIAL_3GPP_CONTEXT_STEP_LAST,
++} Dial3gppContextStep;
++
++typedef struct {
++    MMBroadbandBearerPls62 *self;
++    MMBaseModem            *modem;
++    MMPortSerialAt         *primary;
++    guint                   cid;
++    MMPort                 *data;
++    Dial3gppContextStep     step;
++} Dial3gppContext;
++
++static void
++dial_3gpp_context_free (Dial3gppContext *ctx)
++{
++    g_object_unref (ctx->modem);
++    g_object_unref (ctx->self);
++    g_object_unref (ctx->primary);
++    g_clear_object (&ctx->data);
++    g_slice_free (Dial3gppContext, ctx);
++}
++
++static MMPort *
++dial_3gpp_finish (MMBroadbandBearer  *self,
++                  GAsyncResult       *res,
++                  GError            **error)
++{
++    return MM_PORT (g_task_propagate_pointer (G_TASK (res), error));
++}
++
++static void dial_3gpp_context_step (GTask *task);
++
++static void
++common_dial_operation_ready (MMBaseModem  *modem,
++                             GAsyncResult *res,
++                             GTask        *task)
++{
++    Dial3gppContext *ctx;
++    GError          *error = NULL;
++
++    ctx = (Dial3gppContext *) g_task_get_task_data (task);
++
++    if (!mm_base_modem_at_command_full_finish (modem, res, &error)) {
++        g_task_return_error (task, error);
++        g_object_unref (task);
++        return;
++    }
++
++    /* Go to next step */
++    ctx->step++;
++    dial_3gpp_context_step (task);
++}
++
++static void
++parent_dial_3gpp_ready (MMBroadbandBearer *self,
++                        GAsyncResult *res,
++                        GTask *task)
++{
++    Dial3gppContext *ctx;
++    GError *error = NULL;
++
++    ctx = g_task_get_task_data (task);
++
++    ctx->data = MM_BROADBAND_BEARER_CLASS (mm_broadband_bearer_pls62_parent_class)->dial_3gpp_finish (self, res, &error);
++    if (!ctx->data) {
++        g_task_return_error (task, error);
++        g_object_unref (task);
++        return;
++    }
++
++    /* Go on */
++    ctx->step++;
++    dial_3gpp_context_step (task);
++}
++
++static void
++handle_cancel_dial (GTask *task)
++{
++    Dial3gppContext *ctx;
++    gchar           *command;
++
++    ctx = g_task_get_task_data (task);
++
++    /* Disconnect, may not succeed. Will not check response on cancel */
++    command = g_strdup_printf ("+CGACT=0,%u", ctx->cid);
++    mm_base_modem_at_command_full (ctx->modem,
++                                   ctx->primary,
++                                   command,
++                                   3,
++                                   FALSE,
++                                   FALSE,
++                                   NULL,
++                                   NULL,
++                                   NULL);
++    g_free (command);
++}
++
++static void
++deactivate_ready (MMBaseModem  *modem,
++                  GAsyncResult *res,
++                  GTask        *task)
++{
++    Dial3gppContext *ctx;
++
++    /* Do note check +CGATT errors, that and following commands are best-effort */
++    ctx = (Dial3gppContext *)g_task_get_task_data (task);
++
++    mm_dbg ("cinterion activate context again");
++    mm_base_modem_at_command_full (ctx->modem,
++                                   ctx->primary,
++                                   "+CGATT=1",
++                                   90,
++                                   FALSE,
++                                   FALSE,
++                                   NULL,
++                                   NULL,
++                                   task);
++
++    /* We return with error now and wait for next re-try */
++    g_task_return_new_error (
++        task,
++        MM_CORE_ERROR,
++        MM_CORE_ERROR_FAILED,
++        "cinterion: not CID one, things should work on next re-try");
++    g_object_unref (task);
++}
++
++static void
++detach_ready (MMBaseModem  *modem,
++              GAsyncResult *res,
++              GTask        *task)
++{
++    Dial3gppContext *ctx;
++
++    /* Do note check +CGATT errors, that and following commands are best-effort */
++    ctx = (Dial3gppContext *)g_task_get_task_data (task);
++
++    mm_dbg ("cinterion deactivate context");
++    mm_base_modem_at_command_full (ctx->modem,
++                                   ctx->primary,
++                                   "+CGACT=0",
++                                   90,
++                                   FALSE,
++                                   FALSE,
++                                   NULL,
++                                   (GAsyncReadyCallback)deactivate_ready,
++                                   task);
++}
++
++static void
++set_apn_ready (MMBaseModem  *modem,
++               GAsyncResult *res,
++               GTask        *task)
++{
++    Dial3gppContext *ctx;
++    GError          *error = NULL;
++
++    ctx = (Dial3gppContext *)g_task_get_task_data (task);
++
++    if (!mm_base_modem_at_command_full_finish (modem, res, &error)) {
++        g_task_return_error (task, error);
++        g_object_unref (task);
++        return;
++    }
++
++    mm_dbg ("cinterion dettaching so CID changes apply");
++    mm_base_modem_at_command_full (ctx->modem,
++                                   ctx->primary,
++                                   "+CGATT=0",
++                                   90,
++                                   FALSE,
++                                   FALSE,
++                                   NULL,
++                                   (GAsyncReadyCallback)detach_ready,
++                                   task);
++}
++
++static void
++dial_3gpp_context_step (GTask *task)
++{
++    Dial3gppContext *ctx;
++
++    ctx = g_task_get_task_data (task);
++
++    /* Check for cancellation */
++    if (g_task_return_error_if_cancelled (task)) {
++        handle_cancel_dial (task);
++        g_object_unref (task);
++        return;
++    }
++
++    switch (ctx->step) {
++    case DIAL_3GPP_CONTEXT_STEP_FIRST:
++        if (ctx->cid != 1) {
++            /* We always want CID 1 so LTE auto-attach works. Change CID 1 and re-attach. */
++            gchar *command;
++            const gchar *apn;
++
++            apn = mm_bearer_properties_get_apn (mm_base_bearer_peek_config (MM_BASE_BEARER (ctx->self)));
++            mm_dbg ("cinterion dial step %u/%u: setting CID 1 to APN %s",
++                    ctx->step, DIAL_3GPP_CONTEXT_STEP_LAST, apn);
++            command = g_strdup_printf ("+CGDCONT=1,\"IPV4V6\",\"%s\"", apn);
++            mm_base_modem_at_command_full (ctx->modem,
++                                           ctx->primary,
++                                           command,
++                                           90,
++                                           FALSE,
++                                           FALSE,
++                                           NULL,
++                                           (GAsyncReadyCallback)set_apn_ready,
++                                           task);
++            g_free (command);
++            return;
++        }
++        /* Fall down to next step */
++        ctx->step++;
++    case DIAL_3GPP_CONTEXT_STEP_AUTH: {
++        gchar *command;
++
++        command = build_auth_string (mm_base_bearer_peek_config (MM_BASE_BEARER (ctx->self)), ctx->cid);
++        if (command) {
++            mm_dbg ("cinterion dial step %u/%u: authenticating...", ctx->step, DIAL_3GPP_CONTEXT_STEP_LAST);
++            /* Send SGAUTH write, if User & Pass are provided.
++             * advance to next state by callback */
++            mm_base_modem_at_command_full (ctx->modem,
++                                           ctx->primary,
++                                           command,
++                                           10,
++                                           FALSE,
++                                           FALSE,
++                                           NULL,
++                                           (GAsyncReadyCallback)common_dial_operation_ready,
++                                           task);
++            g_free (command);
++            return;
++        }
++
++        /* Fall down to next step */
++        mm_dbg ("cinterion dial step %u/%u: authentication not required", ctx->step, DIAL_3GPP_CONTEXT_STEP_LAST);
++        ctx->step++;
++    }
++    case DIAL_3GPP_CONTEXT_STEP_START_CONNECTION:
++        /* Chain up to parent's dialling */
++        MM_BROADBAND_BEARER_CLASS (mm_broadband_bearer_pls62_parent_class)->dial_3gpp (
++            MM_BROADBAND_BEARER (ctx->self),
++            ctx->modem,
++            ctx->primary,
++            ctx->cid,
++            g_task_get_cancellable (task),
++            (GAsyncReadyCallback)parent_dial_3gpp_ready,
++            task);
++
++        return;
++    case DIAL_3GPP_CONTEXT_STEP_LAST:
++        mm_dbg ("cinterion dial step %u/%u: finished", ctx->step, DIAL_3GPP_CONTEXT_STEP_LAST);
++        g_task_return_pointer (task, g_object_ref (ctx->data), g_object_unref);
++        g_object_unref (task);
++        return;
++    }
++}
++
++static void
++dial_3gpp (MMBroadbandBearer   *self,
++           MMBaseModem         *modem,
++           MMPortSerialAt      *primary,
++           guint                cid,
++           GCancellable        *cancellable,
++           GAsyncReadyCallback  callback,
++           gpointer             user_data)
++{
++    GTask           *task;
++    Dial3gppContext *ctx;
++
++    g_assert (primary != NULL);
++
++    /* Setup task and create connection context */
++    task = g_task_new (self, cancellable, callback, user_data);
++    ctx = g_slice_new0 (Dial3gppContext);
++    g_task_set_task_data (task, ctx, (GDestroyNotify) dial_3gpp_context_free);
++
++    /* Setup context */
++    ctx->self    = g_object_ref (self);
++    ctx->modem   = g_object_ref (modem);
++    ctx->primary = g_object_ref (primary);
++    ctx->cid     = cid;
++    ctx->step    = DIAL_3GPP_CONTEXT_STEP_FIRST;
++
++    /* Run! */
++    dial_3gpp_context_step (task);
++}
++
++/*****************************************************************************/
++/* Setup and Init Bearers */
++
++MMBaseBearer *
++mm_broadband_bearer_pls62_new_finish (GAsyncResult  *res,
++                                          GError       **error)
++{
++    GObject *bearer;
++    GObject *source;
++
++    source = g_async_result_get_source_object (res);
++    bearer = g_async_initable_new_finish (G_ASYNC_INITABLE (source), res, error);
++    g_object_unref (source);
++
++    if (!bearer)
++        return NULL;
++
++    /* Only export valid bearers */
++    mm_base_bearer_export (MM_BASE_BEARER (bearer));
++
++    return MM_BASE_BEARER (bearer);
++}
++
++void
++mm_broadband_bearer_pls62_new (MMBroadbandModemCinterion *modem,
++                                   MMBearerProperties        *config,
++                                   GCancellable              *cancellable,
++                                   GAsyncReadyCallback        callback,
++                                   gpointer                   user_data)
++{
++    g_async_initable_new_async (
++        MM_TYPE_BROADBAND_BEARER_PLS62,
++        G_PRIORITY_DEFAULT,
++        cancellable,
++        callback,
++        user_data,
++        MM_BASE_BEARER_MODEM, modem,
++        MM_BASE_BEARER_CONFIG, config,
++        "ip-timeout", BEARER_PLS62_IP_TIMEOUT_DEFAULT,
++        NULL);
++}
++
++static void
++mm_broadband_bearer_pls62_init (MMBroadbandBearerPls62 *self)
++{
++}
++
++static void
++mm_broadband_bearer_pls62_class_init (MMBroadbandBearerPls62Class *klass)
++{
++    MMBroadbandBearerClass *broadband_bearer_class = MM_BROADBAND_BEARER_CLASS (klass);
++
++    broadband_bearer_class->dial_3gpp              = dial_3gpp;
++    broadband_bearer_class->dial_3gpp_finish       = dial_3gpp_finish;
++}
+diff --git a/plugins/cinterion/mm-broadband-bearer-pls62.h b/plugins/cinterion/mm-broadband-bearer-pls62.h
+new file mode 100644
+index 0000000..59e77ef
+--- /dev/null
++++ b/plugins/cinterion/mm-broadband-bearer-pls62.h
+@@ -0,0 +1,57 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2018 Canonical Ltd
++ * Author: Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com>
++ */
++
++#ifndef MM_BROADBAND_BEARER_PLS62_H
++#define MM_BROADBAND_BEARER_PLS62_H
++
++#include <glib.h>
++#include <glib-object.h>
++
++#include "mm-broadband-bearer.h"
++#include "mm-broadband-modem-cinterion.h"
++
++/* Allow up to 90s to get a proper IP connection */
++#define BEARER_PLS62_IP_TIMEOUT_DEFAULT 90
++
++#define MM_TYPE_BROADBAND_BEARER_PLS62                (mm_broadband_bearer_pls62_get_type ())
++#define MM_BROADBAND_BEARER_PLS62(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MM_TYPE_BROADBAND_BEARER_PLS62, MMBroadbandBearerPls62))
++#define MM_BROADBAND_BEARER_PLS62_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass),  MM_TYPE_BROADBAND_BEARER_PLS62, MMBroadbandBearerPls62Class))
++#define MM_IS_BROADBAND_BEARER_PLS62(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MM_TYPE_BROADBAND_BEARER_PLS62))
++#define MM_IS_BROADBAND_BEARER_PLS62_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass),  MM_TYPE_BROADBAND_BEARER_PLS62))
++#define MM_BROADBAND_BEARER_PLS62_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj),  MM_TYPE_BROADBAND_BEARER_PLS62, MMBroadbandBearerPls62Class))
++
++typedef struct _MMBroadbandBearerPls62      MMBroadbandBearerPls62;
++typedef struct _MMBroadbandBearerPls62Class MMBroadbandBearerPls62Class;
++
++struct _MMBroadbandBearerPls62 {
++    MMBroadbandBearer parent;
++};
++
++struct _MMBroadbandBearerPls62Class {
++    MMBroadbandBearerClass parent;
++};
++
++GType mm_broadband_bearer_pls62_get_type (void);
++
++void          mm_broadband_bearer_pls62_new        (MMBroadbandModemCinterion *modem,
++                                                    MMBearerProperties        *config,
++                                                    GCancellable              *cancellable,
++                                                    GAsyncReadyCallback        callback,
++                                                    gpointer                   user_data);
++MMBaseBearer *mm_broadband_bearer_pls62_new_finish (GAsyncResult              *res,
++                                                    GError                   **error);
++
++#endif /* MM_BROADBAND_BEARER_PLS62_H */
+diff --git a/plugins/cinterion/mm-broadband-modem-cinterion.c b/plugins/cinterion/mm-broadband-modem-cinterion.c
+index 8cbb49c..0cccda1 100644
+--- a/plugins/cinterion/mm-broadband-modem-cinterion.c
++++ b/plugins/cinterion/mm-broadband-modem-cinterion.c
+@@ -40,6 +40,7 @@
+ #include "mm-modem-helpers-cinterion.h"
+ #include "mm-shared-cinterion.h"
+ #include "mm-broadband-bearer-cinterion.h"
++#include "mm-broadband-bearer-pls62.h"
+ 
+ static void iface_modem_init           (MMIfaceModem          *iface);
+ static void iface_modem_3gpp_init      (MMIfaceModem3gpp      *iface);
+@@ -1687,6 +1688,23 @@ broadband_bearer_cinterion_new_ready (GObject      *unused,
+     g_object_unref (task);
+ }
+ 
++static void
++broadband_bearer_pls62_new_ready (GObject      *unused,
++                                      GAsyncResult *res,
++                                      GTask        *task)
++{
++    MMBaseBearer *bearer;
++    GError       *error = NULL;
++
++    bearer = mm_broadband_bearer_pls62_new_finish (res, &error);
++    if (!bearer)
++        g_task_return_error (task, error);
++    else
++        g_task_return_pointer (task, bearer, g_object_unref);
++    g_object_unref (task);
++}
++
++#if 0
+ static void
+ broadband_bearer_new_ready (GObject      *unused,
+                             GAsyncResult *res,
+@@ -1729,6 +1747,7 @@ broadband_bearer_no_swwan_new (MMBroadbandModem *modem,
+         "ip-timeout", BEARER_CINTERION_IP_TIMEOUT_DEFAULT,
+         NULL);
+ }
++#endif
+ 
+ static void
+ common_create_bearer (GTask *task)
+@@ -1739,11 +1758,11 @@ common_create_bearer (GTask *task)
+ 
+     switch (self->priv->swwan_support) {
+     case FEATURE_NOT_SUPPORTED:
+-        mm_dbg ("^SWWAN not supported, creating default bearer...");
+-        broadband_bearer_no_swwan_new (MM_BROADBAND_MODEM (self),
++        mm_dbg ("^SWWAN not supported, creating PLS62 bearer...");
++        mm_broadband_bearer_pls62_new (MM_BROADBAND_MODEM_CINTERION (self),
+                                        g_task_get_task_data (task),
+                                        NULL, /* cancellable */
+-                                       (GAsyncReadyCallback)broadband_bearer_new_ready,
++                                       (GAsyncReadyCallback)broadband_bearer_pls62_new_ready,
+                                        task);
+         return;
+     case FEATURE_SUPPORTED:
+-- 
+2.17.1
+

@@ -1,0 +1,1355 @@
+From 1f8bf04f9e3cbad6ee58a39c95382630b032822f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonsosanchezbeato@yahoo.es>
+Date: Tue, 8 Nov 2016 15:28:22 +0100
+Subject: [PATCH 04/17] Add plano modem plugin
+
+Plano plugin is used for telit modems for Dell gateways.
+---
+ plugins/Makefile.am                       |  16 +
+ plugins/plano/mm-broadband-bearer-plano.c | 664 ++++++++++++++++++++++
+ plugins/plano/mm-broadband-bearer-plano.h |  59 ++
+ plugins/plano/mm-broadband-modem-plano.c  | 353 ++++++++++++
+ plugins/plano/mm-broadband-modem-plano.h  |  47 ++
+ plugins/plano/mm-plugin-plano.c           |  98 ++++
+ plugins/plano/mm-plugin-plano.h           |  45 ++
+ 7 files changed, 1282 insertions(+)
+ create mode 100644 plugins/plano/mm-broadband-bearer-plano.c
+ create mode 100644 plugins/plano/mm-broadband-bearer-plano.h
+ create mode 100644 plugins/plano/mm-broadband-modem-plano.c
+ create mode 100644 plugins/plano/mm-broadband-modem-plano.h
+ create mode 100644 plugins/plano/mm-plugin-plano.c
+ create mode 100644 plugins/plano/mm-plugin-plano.h
+
+diff --git a/plugins/Makefile.am b/plugins/Makefile.am
+index 17a21a0..5b91e61 100644
+--- a/plugins/Makefile.am
++++ b/plugins/Makefile.am
+@@ -916,6 +916,22 @@ TELIT_COMMON_LIBADD_FLAGS   = \
+ 	$(builddir)/libmm-utils-telit.la \
+ 	$(NULL)
+ 
++################################################################################
++# plugin: plano (telit modems for Dell gateway)
++################################################################################
++
++pkglib_LTLIBRARIES += libmm-plugin-plano.la
++libmm_plugin_plano_la_SOURCES = \
++	plano/mm-plugin-plano.c \
++	plano/mm-plugin-plano.h \
++	plano/mm-broadband-modem-plano.c \
++	plano/mm-broadband-modem-plano.h \
++	plano/mm-broadband-bearer-plano.c \
++	plano/mm-broadband-bearer-plano.h \
++	$(NULL)
++libmm_plugin_plano_la_CPPFLAGS = $(PLUGIN_COMMON_COMPILER_FLAGS)
++libmm_plugin_plano_la_LDFLAGS  = $(PLUGIN_COMMON_LINKER_FLAGS)
++
+ ################################################################################
+ # plugin: mtk
+ ################################################################################
+diff --git a/plugins/plano/mm-broadband-bearer-plano.c b/plugins/plano/mm-broadband-bearer-plano.c
+new file mode 100644
+index 0000000..49193de
+--- /dev/null
++++ b/plugins/plano/mm-broadband-bearer-plano.c
+@@ -0,0 +1,664 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2016 Canonical Ltd
++ */
++
++#include <config.h>
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <ctype.h>
++#include <arpa/inet.h>
++#include <netinet/in.h>
++
++#include <ModemManager.h>
++#define _LIBMM_INSIDE_MM
++#include <libmm-glib.h>
++
++#include "mm-base-modem-at.h"
++#include "mm-broadband-bearer-plano.h"
++#include "mm-log.h"
++#include "mm-modem-helpers.h"
++
++G_DEFINE_TYPE (MMBroadbandBearerPlano, mm_broadband_bearer_plano, MM_TYPE_BROADBAND_BEARER);
++
++struct _MMBroadbandBearerPlanoPrivate {
++    int padding;
++};
++
++/*****************************************************************************/
++/* 3GPP Dialing (sub-step of the 3GPP Connection sequence) */
++
++typedef enum {
++    DIAL_3GPP_STEP_FIRST,
++    DIAL_3GPP_STEP_SET_NCM,
++    DIAL_3GPP_STEP_PS_ATTACH,
++    DIAL_3GPP_STEP_CONNECT,
++    DIAL_3GPP_STEP_LAST
++} Dial3gppStep;
++
++typedef struct {
++    MMBroadbandBearer *self;
++    MMBaseModem *modem;
++    MMPortSerialAt *primary;
++    guint cid;
++    GCancellable *cancellable;
++    GSimpleAsyncResult *result;
++    MMPort *data;
++    Dial3gppStep step;
++} Dial3gppContext;
++
++static void dial_3gpp_context_step (Dial3gppContext *ctx);
++
++static void
++dial_3gpp_context_complete_and_free (Dial3gppContext *ctx)
++{
++    g_simple_async_result_complete_in_idle (ctx->result);
++    g_object_unref (ctx->cancellable);
++    g_object_unref (ctx->result);
++    if (ctx->data)
++        g_object_unref (ctx->data);
++    g_object_unref (ctx->primary);
++    g_object_unref (ctx->modem);
++    g_object_unref (ctx->self);
++    g_slice_free (Dial3gppContext, ctx);
++}
++
++static MMPort *
++dial_3gpp_finish (MMBroadbandBearer *self,
++                  GAsyncResult *res,
++                  GError **error)
++{
++    if (g_simple_async_result_propagate_error (G_SIMPLE_ASYNC_RESULT (res), error))
++        return NULL;
++
++    return MM_PORT (g_object_ref (g_simple_async_result_get_op_res_gpointer (G_SIMPLE_ASYNC_RESULT (res))));
++}
++
++static void
++command_ready (MMBaseModem *modem,
++               GAsyncResult *res,
++               Dial3gppContext *ctx)
++{
++    GError *error = NULL;
++
++    if (!mm_base_modem_at_command_full_finish (modem, res, &error)) {
++        g_simple_async_result_take_error (ctx->result, error);
++        dial_3gpp_context_complete_and_free (ctx);
++        return;
++    }
++
++    /* Go on */
++    ctx->step++;
++    dial_3gpp_context_step (ctx);
++}
++
++static void
++dial_3gpp_context_step (Dial3gppContext *ctx)
++{
++    gchar *command;
++
++    if (g_cancellable_is_cancelled (ctx->cancellable)) {
++         g_simple_async_result_set_error (ctx->result,
++                                          MM_CORE_ERROR,
++                                          MM_CORE_ERROR_CANCELLED,
++                                          "Dial operation has been cancelled");
++         dial_3gpp_context_complete_and_free (ctx);
++         return;
++    }
++
++    /* HE910 disables the port that sends +CGDATA until the data connection is closed.
++     * We send these commands using the secondary port to avoid blocking the primary
++     * port so MM can function normally with data on.
++     */
++    switch (ctx->step) {
++    case DIAL_3GPP_STEP_FIRST:
++        /* Fall down */
++        ctx->step++;
++
++    case DIAL_3GPP_STEP_SET_NCM:
++        command = g_strdup_printf ("AT#NCM=1,%u", ctx->cid);
++        mm_base_modem_at_command_full (ctx->modem,
++                                       mm_base_modem_peek_port_secondary (ctx->modem),
++                                       command,
++                                       6,
++                                       FALSE,
++                                       FALSE, /* raw */
++                                       NULL, /* cancellable */
++                                       (GAsyncReadyCallback)command_ready,
++                                       ctx);
++        g_free (command);
++        return;
++
++    case DIAL_3GPP_STEP_PS_ATTACH:
++        command = g_strdup_printf ("AT+CGACT=1,%u", ctx->cid);
++        mm_base_modem_at_command_full (ctx->modem,
++                                       mm_base_modem_peek_port_secondary (ctx->modem),
++                                       command,
++                                       6,
++                                       FALSE,
++                                       FALSE, /* raw */
++                                       NULL, /* cancellable */
++                                       (GAsyncReadyCallback)command_ready,
++                                       ctx);
++        g_free (command);
++        return;
++
++    case DIAL_3GPP_STEP_CONNECT:
++        ctx->data = mm_base_modem_get_best_data_port (ctx->modem, MM_PORT_TYPE_NET);
++        if (!ctx->data) {
++            g_simple_async_result_set_error (ctx->result,
++                                         MM_CORE_ERROR,
++                                         MM_CORE_ERROR_FAILED,
++                                         "Net port not found, cannot start data connection");
++            dial_3gpp_context_complete_and_free (ctx);
++            return;
++        }
++
++        command = g_strdup_printf ("AT+CGDATA=\"M-RAW_IP\",%u", ctx->cid);
++        mm_base_modem_at_command_full (ctx->modem,
++                                       mm_base_modem_peek_port_secondary (ctx->modem),
++                                       command,
++                                       6,
++                                       FALSE,
++                                       FALSE, /* raw */
++                                       NULL, /* cancellable */
++                                       (GAsyncReadyCallback)command_ready,
++                                       ctx);
++        g_free (command);
++        return;
++
++    case DIAL_3GPP_STEP_LAST:
++        g_simple_async_result_set_op_res_gpointer (ctx->result,
++                                                   g_object_ref (ctx->data),
++                                                   (GDestroyNotify)g_object_unref);
++        dial_3gpp_context_complete_and_free (ctx);
++        return;
++    }
++}
++
++static void
++dial_3gpp (MMBroadbandBearer *self,
++           MMBaseModem *modem,
++           MMPortSerialAt *primary,
++           guint cid,
++           GCancellable *cancellable,
++           GAsyncReadyCallback callback,
++           gpointer user_data)
++{
++    Dial3gppContext *ctx;
++
++    g_assert (primary != NULL);
++
++    ctx = g_slice_new0 (Dial3gppContext);
++    ctx->self = g_object_ref (self);
++    ctx->modem = g_object_ref (modem);
++    ctx->primary = g_object_ref (primary);
++    ctx->cid = cid;
++    ctx->result = g_simple_async_result_new (G_OBJECT (self),
++                                             callback,
++                                             user_data,
++                                             dial_3gpp);
++    ctx->cancellable = g_object_ref (cancellable);
++    ctx->step = DIAL_3GPP_STEP_FIRST;
++
++    dial_3gpp_context_step (ctx);
++}
++
++/*****************************************************************************/
++/* 3GPP IP config retrieval (sub-step of the 3GPP Connection sequence) */
++
++typedef struct {
++    MMBroadbandBearerPlano *self;
++    MMBaseModem *modem;
++    MMPortSerialAt *primary;
++    guint cid;
++    GSimpleAsyncResult *result;
++} GetIpConfig3gppContext;
++
++static GetIpConfig3gppContext *
++get_ip_config_3gpp_context_new (MMBroadbandBearerPlano *self,
++                                MMBaseModem *modem,
++                                MMPortSerialAt *primary,
++                                guint cid,
++                                GAsyncReadyCallback callback,
++                                gpointer user_data)
++{
++    GetIpConfig3gppContext *ctx;
++
++    ctx = g_new0 (GetIpConfig3gppContext, 1);
++    ctx->self = g_object_ref (self);
++    ctx->modem = g_object_ref (modem);
++    ctx->primary = g_object_ref (primary);
++    ctx->cid = cid;
++    ctx->result = g_simple_async_result_new (G_OBJECT (self),
++                                             callback,
++                                             user_data,
++                                             get_ip_config_3gpp_context_new);
++    return ctx;
++}
++
++static void
++get_ip_config_context_complete_and_free (GetIpConfig3gppContext *ctx)
++{
++    g_simple_async_result_complete_in_idle (ctx->result);
++    g_object_unref (ctx->result);
++    g_object_unref (ctx->primary);
++    g_object_unref (ctx->modem);
++    g_object_unref (ctx->self);
++    g_free (ctx);
++}
++
++static gboolean
++get_ip_config_3gpp_finish (MMBroadbandBearer *self,
++                           GAsyncResult *res,
++                           MMBearerIpConfig **ipv4_config,
++                           MMBearerIpConfig **ipv6_config,
++                           GError **error)
++{
++    MMBearerConnectResult *configs;
++    MMBearerIpConfig *ipv4, *ipv6;
++
++    if (g_simple_async_result_propagate_error (G_SIMPLE_ASYNC_RESULT (res), error))
++        return FALSE;
++
++    configs = g_simple_async_result_get_op_res_gpointer (G_SIMPLE_ASYNC_RESULT (res));
++    g_assert (configs);
++
++    ipv4 = mm_bearer_connect_result_peek_ipv4_config (configs);
++    ipv6 = mm_bearer_connect_result_peek_ipv6_config (configs);
++    g_assert (ipv4 || ipv6);
++    if (ipv4_config && ipv4)
++        *ipv4_config = g_object_ref (ipv4);
++    if (ipv6_config && ipv6)
++        *ipv6_config = g_object_ref (ipv6);
++
++    return TRUE;
++}
++
++static char *
++remove_marks(const char *in)
++{
++    size_t bytes = strlen (in) + 1;
++    char *out = g_malloc (bytes);
++    char *aux = out;
++    size_t i;
++
++    for (i = 0; i < bytes; ++i) {
++        if (in[i] != '"')
++            *aux++ = in[i];
++    }
++
++    return out;
++}
++
++static MMBearerIpConfig *
++parse_ipdpaddr_v4 (const gchar **items, guint num_items, GError **error)
++{
++    MMBearerIpConfig *config;
++    const gchar *dns[3] = { 0 };
++    guint dns_i = 0, tmp;
++    const gchar *netmask = NULL;
++    int i;
++    char *ipmask, *aux, *gw, *dns1, *dns2;
++
++    config = mm_bearer_ip_config_new ();
++    mm_bearer_ip_config_set_method (config, MM_BEARER_IP_METHOD_STATIC);
++
++    /* IP address and prefix are in items[3] */
++    ipmask = remove_marks (items[3]);
++    aux = ipmask;
++    for (i = 0; aux && i < 4; ++i)
++        aux = strchr (aux + 1, '.');
++    /* Check if we have netmask */
++    if (aux != NULL) {
++        *aux = '\0';
++        netmask = ++aux;
++        mm_bearer_ip_config_set_prefix (config, mm_netmask_to_cidr (netmask));
++    } else {
++        mm_bearer_ip_config_set_prefix (config, 32); /* default prefix */
++    }
++    if (!inet_pton (AF_INET, ipmask, &tmp)) {
++        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
++                     "Couldn't parse IPv4 address '%s'", ipmask);
++        goto error;
++    }
++
++    mm_bearer_ip_config_set_address (config, ipmask);
++    g_free (ipmask);
++
++    /* Gateway */
++    tmp = 0;
++    gw = remove_marks (items[4]);
++    if (inet_pton (AF_INET, gw, &tmp)) {
++        if (tmp)
++            mm_bearer_ip_config_set_gateway (config, gw);
++    } else {
++        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
++                     "Couldn't parse gateway address '%s'", gw);
++        goto error;
++    }
++    g_free (gw);
++
++    /* DNS */
++    tmp = 0;
++    dns1 = remove_marks (items[5]);
++    if (inet_pton (AF_INET, dns1, &tmp) && tmp)
++        dns[dns_i++] = dns1;
++    else {
++        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
++                     "Couldn't parse DNS address '%s'", dns1);
++        goto error;
++    }
++
++    if (num_items <= 6)
++        goto end;
++
++    /* DNS2 - sometimes missing and set to 0.0.0.0 */
++    tmp = 0;
++    dns2 = remove_marks (items[6]);
++    if (inet_pton (AF_INET, dns2, &tmp) && tmp)
++        dns[dns_i++] = dns2;
++
++    mm_bearer_ip_config_set_dns (config, (const gchar **) dns);
++    g_free (dns1);
++    g_free (dns2);
++
++end:
++    return config;
++
++error:
++    g_object_unref (config);
++    return NULL;
++}
++
++#define IPDPADDR_TAG "+CGCONTRDP: "
++
++static gboolean
++mm_plano_parse_ipdpaddr_response (const gchar *response,
++                                  guint expected_cid,
++                                  MMBearerIpConfig **out_ip4_config,
++                                  MMBearerIpConfig **out_ip6_config,
++                                  GError **error)
++{
++    MMBearerIpConfig *ip4_config = NULL;
++    MMBearerIpConfig *ip6_config = NULL;
++    GError *local = NULL;
++    gboolean success = FALSE;
++    char **items;
++    guint num_items, i, first_free;
++    gint num;
++
++    if (!response || !g_str_has_prefix (response, IPDPADDR_TAG)) {
++        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
++                     "Missing "IPDPADDR_TAG" prefix");
++        return FALSE;
++    }
++
++    response = mm_strip_tag (response, IPDPADDR_TAG);
++    items = g_strsplit_set (response, ",", 0);
++
++    /* Strip any spaces on elements; inet_pton() doesn't like them */
++    num_items = g_strv_length (items);
++    for (i = 0, first_free = 0; i < num_items; i++)
++        items[i] = g_strstrip (items[i]);
++
++    if (num_items < 6) {
++        g_set_error_literal (error,
++                             MM_CORE_ERROR,
++                             MM_CORE_ERROR_FAILED,
++                             "Malformed CGCONTRDP response (not enough items)");
++        goto out;
++    }
++
++    /* Validate context ID */
++    if (!mm_get_int_from_str (items[0], &num) ||
++        num != expected_cid) {
++        g_set_error (error,
++                     MM_CORE_ERROR,
++                     MM_CORE_ERROR_FAILED,
++                     "Unknown CID in CGCONTRDP response (got %d, expected %d)",
++                     (guint) num,
++                     expected_cid);
++        goto out;
++    }
++
++    ip4_config = parse_ipdpaddr_v4 ((const gchar **) items, num_items, &local);
++    if (local) {
++        g_propagate_error (error, local);
++        goto out;
++    }
++
++    /* TODO: IPv6 case */
++
++    success = TRUE;
++
++out:
++    g_strfreev (items);
++
++    *out_ip4_config = ip4_config;
++    *out_ip6_config = ip6_config;
++    return success;
++}
++
++static void
++ip_config_ready (MMBaseModem *modem,
++                 GAsyncResult *res,
++                 GetIpConfig3gppContext *ctx)
++{
++    MMBearerIpConfig *ipv4_config = NULL;
++    MMBearerIpConfig *ipv6_config = NULL;
++    const gchar *response;
++    GError *error = NULL;
++    MMBearerConnectResult *connect_result;
++
++    response = mm_base_modem_at_command_full_finish (modem, res, &error);
++    if (error) {
++        g_simple_async_result_take_error (ctx->result, error);
++        goto out;
++    }
++
++    if (!mm_plano_parse_ipdpaddr_response (response,
++                                           ctx->cid,
++                                           &ipv4_config,
++                                           &ipv6_config,
++                                           &error)) {
++        g_simple_async_result_take_error (ctx->result, error);
++        goto out;
++    }
++
++    if (!ipv4_config && !ipv6_config) {
++        g_simple_async_result_set_error (ctx->result,
++                                         MM_CORE_ERROR,
++                                         MM_CORE_ERROR_FAILED,
++                                         "Couldn't get IP config: couldn't parse response '%s'",
++                                         response);
++        goto out;
++    }
++
++    connect_result = mm_bearer_connect_result_new (MM_PORT (ctx->primary),
++                                                   ipv4_config,
++                                                   ipv6_config);
++    g_simple_async_result_set_op_res_gpointer (ctx->result,
++                                               connect_result,
++                                               (GDestroyNotify)mm_bearer_connect_result_unref);
++
++out:
++    g_clear_object (&ipv4_config);
++    g_clear_object (&ipv6_config);
++    get_ip_config_context_complete_and_free (ctx);
++}
++
++static void
++get_ip_config_3gpp (MMBroadbandBearer *self,
++                    MMBroadbandModem *modem,
++                    MMPortSerialAt *primary,
++                    MMPortSerialAt *secondary,
++                    MMPort *data,
++                    guint cid,
++                    MMBearerIpFamily ip_family,
++                    GAsyncReadyCallback callback,
++                    gpointer user_data)
++{
++    GetIpConfig3gppContext *ctx;
++    gchar *command;
++
++    ctx = get_ip_config_3gpp_context_new (MM_BROADBAND_BEARER_PLANO (self),
++                                          MM_BASE_MODEM (modem),
++                                          primary,
++                                          cid,
++                                          callback,
++                                          user_data);
++
++    command = g_strdup_printf ("+CGCONTRDP=%u", cid);
++    mm_base_modem_at_command_full (MM_BASE_MODEM (modem),
++                                   primary,
++                                   command,
++                                   3,
++                                   FALSE,
++                                   FALSE, /* raw */
++                                   NULL, /* cancellable */
++                                   (GAsyncReadyCallback)ip_config_ready,
++                                   ctx);
++    g_free (command);
++}
++
++/*****************************************************************************/
++/* 3GPP disconnect */
++
++static gboolean
++disconnect_3gpp_finish (MMBroadbandBearer *self,
++                        GAsyncResult *res,
++                        GError **error)
++{
++    return !g_simple_async_result_propagate_error (G_SIMPLE_ASYNC_RESULT (res), error);
++}
++
++static void
++disconnect_ready (MMBaseModem *modem,
++                  GAsyncResult *res,
++                  GSimpleAsyncResult *simple)
++{
++    GError *error = NULL;
++
++    /* Ignore errors for now */
++    mm_base_modem_at_command_full_finish (modem, res, &error);
++    if (error) {
++        mm_dbg ("Disconnection failed (not fatal): %s", error->message);
++        g_error_free (error);
++    }
++
++    g_simple_async_result_set_op_res_gboolean (simple, TRUE);
++    g_simple_async_result_complete (simple);
++    g_object_unref (simple);
++}
++
++static const MMBaseModemAtCommand disconnect_sequence[] = {
++    { "+CGATT=0", 6, FALSE, NULL },
++    { "+CGATT=1", 6, FALSE, NULL },
++    { NULL }
++};
++
++static void
++disconnect_3gpp (MMBroadbandBearer *self,
++                 MMBroadbandModem *modem,
++                 MMPortSerialAt *primary,
++                 MMPortSerialAt *secondary,
++                 MMPort *data,
++                 guint cid,
++                 GAsyncReadyCallback callback,
++                 gpointer user_data)
++{
++    GSimpleAsyncResult *result;
++
++    g_assert (primary != NULL);
++
++    result = g_simple_async_result_new (G_OBJECT (self),
++                                        callback,
++                                        user_data,
++                                        disconnect_3gpp);
++
++    mm_base_modem_at_sequence (MM_BASE_MODEM (modem),
++                               disconnect_sequence,
++                               NULL,
++                               NULL,
++                               (GAsyncReadyCallback)disconnect_ready,
++                               result);
++}
++
++/*****************************************************************************/
++
++MMBaseBearer *
++mm_broadband_bearer_plano_new_finish (GAsyncResult *res,
++                                       GError **error)
++{
++    GObject *bearer;
++    GObject *source;
++
++    source = g_async_result_get_source_object (res);
++    bearer = g_async_initable_new_finish (G_ASYNC_INITABLE (source), res, error);
++    g_object_unref (source);
++
++    if (!bearer)
++        return NULL;
++
++    /* Only export valid bearers */
++    mm_base_bearer_export (MM_BASE_BEARER (bearer));
++
++    return MM_BASE_BEARER (bearer);
++}
++
++void
++mm_broadband_bearer_plano_new (MMBroadbandModem *modem,
++                                MMBearerProperties *config,
++                                GCancellable *cancellable,
++                                GAsyncReadyCallback callback,
++                                gpointer user_data)
++{
++    g_async_initable_new_async (
++        MM_TYPE_BROADBAND_BEARER_PLANO,
++        G_PRIORITY_DEFAULT,
++        cancellable,
++        callback,
++        user_data,
++        MM_BASE_BEARER_MODEM, modem,
++        MM_BASE_BEARER_CONFIG, config,
++        NULL);
++}
++
++static void
++mm_broadband_bearer_plano_init (MMBroadbandBearerPlano *self)
++{
++    /* Initialize private data */
++    self->priv = G_TYPE_INSTANCE_GET_PRIVATE ((self),
++                                              MM_TYPE_BROADBAND_BEARER_PLANO,
++                                              MMBroadbandBearerPlanoPrivate);
++}
++
++static void
++mm_broadband_bearer_plano_class_init (MMBroadbandBearerPlanoClass *klass)
++{
++    GObjectClass *object_class = G_OBJECT_CLASS (klass);
++    MMBroadbandBearerClass *broadband_bearer_class = MM_BROADBAND_BEARER_CLASS (klass);
++
++    g_type_class_add_private (object_class, sizeof (MMBroadbandBearerPlanoPrivate));
++
++    broadband_bearer_class->dial_3gpp = dial_3gpp;
++    broadband_bearer_class->dial_3gpp_finish = dial_3gpp_finish;
++    broadband_bearer_class->get_ip_config_3gpp = get_ip_config_3gpp;
++    broadband_bearer_class->get_ip_config_3gpp_finish = get_ip_config_3gpp_finish;
++    broadband_bearer_class->disconnect_3gpp = disconnect_3gpp;
++    broadband_bearer_class->disconnect_3gpp_finish = disconnect_3gpp_finish;
++}
+diff --git a/plugins/plano/mm-broadband-bearer-plano.h b/plugins/plano/mm-broadband-bearer-plano.h
+new file mode 100644
+index 0000000..c70d16e
+--- /dev/null
++++ b/plugins/plano/mm-broadband-bearer-plano.h
+@@ -0,0 +1,59 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2016 Canonical Ltd
++ */
++
++#ifndef MM_BROADBAND_BEARER_PLANO_H
++#define MM_BROADBAND_BEARER_PLANO_H
++
++#include <glib.h>
++#include <glib-object.h>
++
++#define _LIBMM_INSIDE_MM
++#include <libmm-glib.h>
++
++#include "mm-broadband-bearer.h"
++#include "mm-broadband-modem-plano.h"
++
++#define MM_TYPE_BROADBAND_BEARER_PLANO            (mm_broadband_bearer_plano_get_type ())
++#define MM_BROADBAND_BEARER_PLANO(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MM_TYPE_BROADBAND_BEARER_PLANO, MMBroadbandBearerPlano))
++#define MM_BROADBAND_BEARER_PLANO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MM_TYPE_BROADBAND_BEARER_PLANO, MMBroadbandBearerPlanoClass))
++#define MM_IS_BROADBAND_BEARER_PLANO(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MM_TYPE_BROADBAND_BEARER_PLANO))
++#define MM_IS_BROADBAND_BEARER_PLANO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MM_TYPE_BROADBAND_BEARER_PLANO))
++#define MM_BROADBAND_BEARER_PLANO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MM_TYPE_BROADBAND_BEARER_PLANO, MMBroadbandBearerPlanoClass))
++
++typedef struct _MMBroadbandBearerPlano MMBroadbandBearerPlano;
++typedef struct _MMBroadbandBearerPlanoClass MMBroadbandBearerPlanoClass;
++typedef struct _MMBroadbandBearerPlanoPrivate MMBroadbandBearerPlanoPrivate;
++
++struct _MMBroadbandBearerPlano {
++    MMBroadbandBearer parent;
++    MMBroadbandBearerPlanoPrivate *priv;
++};
++
++struct _MMBroadbandBearerPlanoClass {
++    MMBroadbandBearerClass parent;
++};
++
++GType mm_broadband_bearer_plano_get_type (void);
++
++/* Default 3GPP bearer creation implementation */
++void          mm_broadband_bearer_plano_new        (MMBroadbandModem *modem,
++                                                   MMBearerProperties *config,
++                                                   GCancellable *cancellable,
++                                                   GAsyncReadyCallback callback,
++                                                   gpointer user_data);
++MMBaseBearer *mm_broadband_bearer_plano_new_finish (GAsyncResult *res,
++                                                     GError **error);
++
++#endif /* MM_BROADBAND_BEARER_PLANO_H */
+diff --git a/plugins/plano/mm-broadband-modem-plano.c b/plugins/plano/mm-broadband-modem-plano.c
+new file mode 100644
+index 0000000..6abb6ea
+--- /dev/null
++++ b/plugins/plano/mm-broadband-modem-plano.c
+@@ -0,0 +1,353 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2008 - 2009 Novell, Inc.
++ * Copyright (C) 2009 - 2011 Red Hat, Inc.
++ * Copyright (C) 2011 - 2012 Google Inc.
++ * Copyright (C) 2016 Canonical Ltd
++ */
++
++#include <config.h>
++
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <unistd.h>
++#include <ctype.h>
++
++#include "ModemManager.h"
++#include "mm-base-modem-at.h"
++#include "mm-modem-helpers.h"
++#include "mm-serial-parsers.h"
++#include "mm-log.h"
++#include "mm-errors-types.h"
++#include "mm-iface-modem.h"
++#include "mm-iface-modem-3gpp.h"
++#include "mm-base-modem-at.h"
++#include "mm-broadband-bearer.h"
++#include "mm-plugin-plano.h"
++#include "mm-broadband-modem-plano.h"
++#include "mm-broadband-bearer-plano.h"
++
++static MMIfaceModem *iface_modem_parent;
++
++static void iface_modem_init (MMIfaceModem *iface);
++
++G_DEFINE_TYPE_EXTENDED (MMBroadbandModemPlano, mm_broadband_modem_plano, MM_TYPE_BROADBAND_MODEM, 0,
++                        G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init));
++
++static void
++do_nothing_cb (GObject *source_object,
++         GAsyncResult *res,
++         gpointer user_data)
++{
++}
++
++/*****************************************************************************/
++/* Power state loading (Modem interface) */
++
++static gboolean
++complete_cfun (gpointer user_data)
++{
++    GSimpleAsyncResult *simple = user_data;
++
++    g_simple_async_result_complete (simple);
++    g_object_unref (simple);
++
++    return FALSE;
++}
++
++static void
++modem_ready (MMBaseModem *self,
++             GAsyncResult *res,
++             GSimpleAsyncResult *simple)
++{
++    const gchar *response;
++    GError *error = NULL;
++
++    response = mm_base_modem_at_command_finish (MM_BASE_MODEM (self), res, &error);
++    if (!response) {
++        g_simple_async_result_take_error (simple, error);
++        g_simple_async_result_complete (simple);
++        g_object_unref (simple);
++        return;
++    }
++
++    g_simple_async_result_set_op_res_gpointer (simple, GUINT_TO_POINTER (MM_MODEM_POWER_STATE_ON), NULL);
++
++    /* If we access the SIM immediately after powering up we get an error, we
++     * need to wait a bit to make sure we can access it.
++     */
++    g_timeout_add_seconds (2, complete_cfun, simple);
++}
++
++static void
++load_power_state (MMIfaceModem *self,
++                  GAsyncReadyCallback callback,
++                  gpointer user_data)
++{
++    GSimpleAsyncResult *result;
++
++    result = g_simple_async_result_new (G_OBJECT (self),
++                                        callback,
++                                        user_data,
++                                        load_power_state);
++
++    /* Instead of asking for the current power state, we turn it on so we can
++     * access the SIM when initializing. MM will switch the state back to the
++     * configure one later.
++     */
++    mm_base_modem_at_command (MM_BASE_MODEM (self),
++                              "+CFUN=1",
++                              6,
++                              FALSE,
++                              (GAsyncReadyCallback)modem_ready,
++                              result);
++}
++
++/*****************************************************************************/
++/* Reset (Modem interface) */
++
++static gboolean
++reset_finish (MMIfaceModem *self,
++              GAsyncResult *res,
++              GError **error)
++{
++    return !!mm_base_modem_at_command_finish (MM_BASE_MODEM(self), res, error);
++}
++
++static void
++reset (MMIfaceModem *self,
++       GAsyncReadyCallback callback,
++       gpointer user_data)
++{
++    mm_base_modem_at_command (MM_BASE_MODEM(self),
++                        "#ENHRST=1,0",
++                        6,
++                        FALSE,
++                        callback,
++                        user_data);
++}
++
++/*****************************************************************************/
++/* Configure LED 1, and power it off (during initialization) */
++
++static const MMBaseModemAtCommand initialization_sequence[] = {
++    { "#GPIO=1,0,2", 6, FALSE, NULL },
++    { NULL }
++};
++
++static gboolean
++initialization_stopped (MMBroadbandModem *self,
++                        gpointer started_context,
++                        GError **error)
++{
++    mm_base_modem_at_sequence_full (MM_BASE_MODEM (self),
++                                    mm_base_modem_peek_port_primary (MM_BASE_MODEM (self)),
++                                    initialization_sequence,
++                                    NULL,
++                                    NULL,
++                                    NULL,
++                                    do_nothing_cb,
++                                    self);
++
++    /* Call parent's */
++    return MM_BROADBAND_MODEM_CLASS (mm_broadband_modem_plano_parent_class)
++        ->initialization_stopped (self, started_context, error);
++}
++
++/*****************************************************************************/
++/* Switch LED mode after enabling (radio is turned on by generic parts) */
++
++static gboolean
++enabling_started_finish (MMBroadbandModem *self,
++                         GAsyncResult *res,
++                         GError **error)
++{
++    mm_base_modem_at_command_full (MM_BASE_MODEM (self),
++                                   mm_base_modem_peek_port_primary (MM_BASE_MODEM (self)),
++                                   "#SLED=2",
++                                   6,
++                                   FALSE,
++                                   FALSE,
++                                   NULL, /* cancellable */
++                                   do_nothing_cb,
++                                   self);
++
++    /* Call parent's */
++    return MM_BROADBAND_MODEM_CLASS (mm_broadband_modem_plano_parent_class)
++        ->enabling_started_finish (self, res, error);
++}
++
++/*****************************************************************************/
++/* Switch LED mode and turn off radio to finish disabling */
++
++static const MMBaseModemAtCommand disabling_sequence[] = {
++    { "#SLED=0", 6, FALSE, NULL },
++    { "+CFUN=4", 6, FALSE, NULL },
++    { NULL }
++};
++
++static gboolean
++disabling_stopped (MMBroadbandModem *self,
++                   GError **error)
++{
++    mm_base_modem_at_sequence (MM_BASE_MODEM (self),
++                               disabling_sequence,
++                               NULL,
++                               NULL,
++                               do_nothing_cb,
++                               self);
++
++    /* Call parent's */
++    return MM_BROADBAND_MODEM_CLASS (mm_broadband_modem_plano_parent_class)
++        ->disabling_stopped (self, error);
++}
++
++/*****************************************************************************/
++/* Create Bearer (Modem interface) */
++
++static unsigned
++get_uint_property (GObject *obj, const gchar *property_name)
++{
++    GValue value = G_VALUE_INIT;
++
++    g_value_init (&value, G_TYPE_UINT);
++    g_object_get_property (obj, property_name, &value);
++    return g_value_get_uint (&value);
++}
++
++static MMBaseBearer *
++modem_create_bearer_finish (MMIfaceModem *self,
++                            GAsyncResult *res,
++                            GError **error)
++{
++    MMBaseBearer *bearer;
++    unsigned pid;
++
++    pid = get_uint_property (G_OBJECT (self), MM_BASE_MODEM_PRODUCT_ID);
++
++    if (pid == PID_PLANO_HE910)
++        return iface_modem_parent->create_bearer_finish (self, res, error);
++
++    bearer = g_simple_async_result_get_op_res_gpointer (G_SIMPLE_ASYNC_RESULT (res));
++    mm_dbg ("New Plano bearer created at DBus path '%s'", mm_base_bearer_get_path (bearer));
++
++    return g_object_ref (bearer);
++}
++
++static void
++broadband_bearer_plano_new_ready (GObject *source,
++                                   GAsyncResult *res,
++                                   GSimpleAsyncResult *simple)
++{
++    MMBaseBearer *bearer = NULL;
++    GError *error = NULL;
++
++    bearer = mm_broadband_bearer_plano_new_finish (res, &error);
++    if (!bearer)
++        g_simple_async_result_take_error (simple, error);
++    else
++        g_simple_async_result_set_op_res_gpointer (simple,
++                                                   bearer,
++                                                   (GDestroyNotify)g_object_unref);
++    g_simple_async_result_complete (simple);
++    g_object_unref (simple);
++}
++
++static void
++modem_create_bearer (MMIfaceModem *self,
++                     MMBearerProperties *properties,
++                     GAsyncReadyCallback callback,
++                     gpointer user_data)
++{
++    GSimpleAsyncResult *result;
++    unsigned vid, pid;
++
++    vid = get_uint_property (G_OBJECT (self), MM_BASE_MODEM_VENDOR_ID);
++    pid = get_uint_property (G_OBJECT (self), MM_BASE_MODEM_PRODUCT_ID);
++
++    mm_dbg ("Creating Plano bearer for VID %x PID %x...", vid, pid);
++
++    if (pid == PID_PLANO_HE910) {
++        iface_modem_parent->create_bearer (self, properties, callback, user_data);
++        return;
++    }
++
++    result = g_simple_async_result_new (G_OBJECT (self),
++                                        callback,
++                                        user_data,
++                                        modem_create_bearer);
++
++    mm_broadband_bearer_plano_new (MM_BROADBAND_MODEM (self),
++                                  properties,
++                                  NULL, /* cancellable */
++                                  (GAsyncReadyCallback)broadband_bearer_plano_new_ready,
++                                  result);
++}
++
++/*****************************************************************************/
++
++MMBroadbandModemPlano *
++mm_broadband_modem_plano_new (const gchar *device,
++                             const gchar **drivers,
++                             const gchar *plugin,
++                             guint16 vendor_id,
++                             guint16 product_id)
++{
++    return g_object_new (MM_TYPE_BROADBAND_MODEM_PLANO,
++                         MM_BASE_MODEM_DEVICE, device,
++                         MM_BASE_MODEM_DRIVERS, drivers,
++                         MM_BASE_MODEM_PLUGIN, plugin,
++                         MM_BASE_MODEM_VENDOR_ID, vendor_id,
++                         MM_BASE_MODEM_PRODUCT_ID, product_id,
++                         NULL);
++}
++
++static void
++mm_broadband_modem_plano_init (MMBroadbandModemPlano *self)
++{
++}
++
++static void
++iface_modem_init (MMIfaceModem *iface)
++{
++    iface_modem_parent = g_type_interface_peek_parent (iface);
++
++    iface->load_power_state = load_power_state;
++
++    /* Disable AT commands that return errors after +CFUN=1 */
++    iface->setup_flow_control = NULL;
++    iface->setup_flow_control_finish = NULL;
++    iface->load_supported_charsets = NULL;
++    iface->load_supported_charsets_finish = NULL;
++    iface->setup_charset = NULL;
++    iface->setup_charset_finish = NULL;
++
++    /* Specific command for reset */
++    iface->reset = reset;
++    iface->reset_finish = reset_finish;
++
++    /* Bearer with specific commands */
++    iface->create_bearer = modem_create_bearer;
++    iface->create_bearer_finish = modem_create_bearer_finish;
++}
++
++static void
++mm_broadband_modem_plano_class_init (MMBroadbandModemPlanoClass *klass)
++{
++    MMBroadbandModemClass *broadband_modem_class = MM_BROADBAND_MODEM_CLASS (klass);
++
++    broadband_modem_class->initialization_stopped = initialization_stopped;
++    broadband_modem_class->enabling_started_finish = enabling_started_finish;
++    broadband_modem_class->disabling_stopped = disabling_stopped;
++}
+diff --git a/plugins/plano/mm-broadband-modem-plano.h b/plugins/plano/mm-broadband-modem-plano.h
+new file mode 100644
+index 0000000..f2852de
+--- /dev/null
++++ b/plugins/plano/mm-broadband-modem-plano.h
+@@ -0,0 +1,47 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2016 Canonical Ltd
++ */
++
++#ifndef MM_BROADBAND_MODEM_PLANO_H
++#define MM_BROADBAND_MODEM_PLANO_H
++
++#include "mm-broadband-modem.h"
++
++#define MM_TYPE_BROADBAND_MODEM_PLANO            (mm_broadband_modem_plano_get_type ())
++#define MM_BROADBAND_MODEM_PLANO(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MM_TYPE_BROADBAND_MODEM_PLANO, MMBroadbandModemPlano))
++#define MM_BROADBAND_MODEM_PLANO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MM_TYPE_BROADBAND_MODEM_PLANO, MMBroadbandModemPlanoClass))
++#define MM_IS_BROADBAND_MODEM_PLANO(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MM_TYPE_BROADBAND_MODEM_PLANO))
++#define MM_IS_BROADBAND_MODEM_PLANO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MM_TYPE_BROADBAND_MODEM_PLANO))
++#define MM_BROADBAND_MODEM_PLANO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MM_TYPE_BROADBAND_MODEM_PLANO, MMBroadbandModemPlanoClass))
++
++typedef struct _MMBroadbandModemPlano MMBroadbandModemPlano;
++typedef struct _MMBroadbandModemPlanoClass MMBroadbandModemPlanoClass;
++
++struct _MMBroadbandModemPlano {
++    MMBroadbandModem parent;
++};
++
++struct _MMBroadbandModemPlanoClass{
++    MMBroadbandModemClass parent;
++};
++
++GType mm_broadband_modem_plano_get_type (void);
++
++MMBroadbandModemPlano *mm_broadband_modem_plano_new (const gchar *device,
++                                                   const gchar **drivers,
++                                                   const gchar *plugin,
++                                                   guint16 vendor_id,
++                                                   guint16 product_id);
++
++#endif /* MM_BROADBAND_MODEM_PLANO_H */
+diff --git a/plugins/plano/mm-plugin-plano.c b/plugins/plano/mm-plugin-plano.c
+new file mode 100644
+index 0000000..2a14d5f
+--- /dev/null
++++ b/plugins/plano/mm-plugin-plano.c
+@@ -0,0 +1,98 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2015 - 2016 Canonical Ltd.
++ */
++
++#include <string.h>
++#include <gmodule.h>
++
++#define _LIBMM_INSIDE_MM
++#include <libmm-glib.h>
++
++#include "mm-plugin-plano.h"
++#include "mm-broadband-modem-plano.h"
++#include "mm-log.h"
++
++#if defined WITH_MBIM
++#include "mm-broadband-modem-mbim.h"
++#endif
++
++G_DEFINE_TYPE (MMPluginPlano, mm_plugin_plano, MM_TYPE_PLUGIN)
++
++int mm_plugin_major_version = MM_PLUGIN_MAJOR_VERSION;
++int mm_plugin_minor_version = MM_PLUGIN_MINOR_VERSION;
++
++/*****************************************************************************/
++
++static MMBaseModem *
++create_modem (MMPlugin *self,
++              const gchar *sysfs_path,
++              const gchar **drivers,
++              guint16 vendor,
++              guint16 product,
++              GList *probes,
++              GError **error)
++{
++#if defined WITH_MBIM
++    if (mm_port_probe_list_has_mbim_port (probes)) {
++        mm_dbg ("MBIM-powered generic modem found...");
++        return MM_BASE_MODEM (mm_broadband_modem_mbim_new (sysfs_path,
++                                                           drivers,
++                                                           mm_plugin_get_name (self),
++                                                           vendor,
++                                                           product));
++    }
++#endif
++
++    return MM_BASE_MODEM (mm_broadband_modem_plano_new (sysfs_path,
++                                                       drivers,
++                                                       mm_plugin_get_name (self),
++                                                       vendor,
++                                                       product));
++}
++
++/*****************************************************************************/
++
++G_MODULE_EXPORT MMPlugin *
++mm_plugin_create (void)
++{
++    static const gchar *subsystems[] = { "tty", "net", "usb", NULL };
++    static const mm_uint16_pair product_ids[] = {
++        { VID_PLANO, PID_PLANO_HE910    }, // Telit HE910
++        { VID_PLANO, PID_PLANO_LE910_SV }, // Telit LE910 SV
++        { VID_PLANO, PID_PLANO_LE910_NA }, // Telit LE910 NA
++        { 0, 0 }
++    };
++
++    return MM_PLUGIN (
++        g_object_new (MM_TYPE_PLUGIN_PLANO,
++                      MM_PLUGIN_NAME,               "Plano",
++                      MM_PLUGIN_ALLOWED_SUBSYSTEMS, subsystems,
++                      MM_PLUGIN_ALLOWED_PRODUCT_IDS, product_ids,
++                      MM_PLUGIN_ALLOWED_AT,         TRUE,
++                      MM_PLUGIN_ALLOWED_MBIM,       TRUE,
++                      NULL));
++}
++
++static void
++mm_plugin_plano_init (MMPluginPlano *self)
++{
++}
++
++static void
++mm_plugin_plano_class_init (MMPluginPlanoClass *klass)
++{
++    MMPluginClass *plugin_class = MM_PLUGIN_CLASS (klass);
++
++    plugin_class->create_modem = create_modem;
++}
+diff --git a/plugins/plano/mm-plugin-plano.h b/plugins/plano/mm-plugin-plano.h
+new file mode 100644
+index 0000000..1c0a0a1
+--- /dev/null
++++ b/plugins/plano/mm-plugin-plano.h
+@@ -0,0 +1,45 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2015 - 2016 Canonical Ltd.
++ */
++
++#ifndef MM_PLUGIN_PLANO_H
++#define MM_PLUGIN_PLANO_H
++
++#include "mm-plugin.h"
++
++#define MM_TYPE_PLUGIN_PLANO            (mm_plugin_plano_get_type ())
++#define MM_PLUGIN_PLANO(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MM_TYPE_PLUGIN_PLANO, MMPluginPlano))
++#define MM_PLUGIN_PLANO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MM_TYPE_PLUGIN_PLANO, MMPluginPlanoClass))
++#define MM_IS_PLUGIN_PLANO(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MM_TYPE_PLUGIN_PLANO))
++#define MM_IS_PLUGIN_PLANO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MM_TYPE_PLUGIN_PLANO))
++#define MM_PLUGIN_PLANO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MM_TYPE_PLUGIN_PLANO, MMPluginPlanoClass))
++
++#define VID_PLANO          0x413c
++#define PID_PLANO_HE910    0x81ba
++#define PID_PLANO_LE910_SV 0x81bb
++#define PID_PLANO_LE910_NA 0x81bc
++
++typedef struct {
++    MMPlugin parent;
++} MMPluginPlano;
++
++typedef struct {
++    MMPluginClass parent;
++} MMPluginPlanoClass;
++
++GType mm_plugin_plano_get_type (void);
++
++G_MODULE_EXPORT MMPlugin *mm_plugin_create (void);
++
++#endif /* MM_PLUGIN_PLANO_H */
+-- 
+2.17.1
+

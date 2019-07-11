@@ -1,0 +1,19 @@
+summary: Test modem-manager snap installation was successful
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    # Service should be up an running
+    wait_for_modem_manager
+
+    # .. and mmcli should be able to reach ModemManager
+    /snap/bin/mmcli -L
+
+    # Ensure all necessary plugs/slots are connected
+    snap interfaces | grep -Pzq "modem-manager:service +modem-manager:mmcli"
+
+    # Make sure the daemon's parent is PID 1
+    pgrep -P 1 ModemManager
+
+    # Make sure debug log is disabled
+    ! sudo journalctl --unit=snap.modem-manager.modemmanager.service | MATCH "<debug>"

@@ -1,0 +1,9 @@
+summary: Verify aliases provided by the snap are correctly enabled
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    test -e /snap/bin/mmcli
+
+    wait_for_modem_manager
+    sudo /snap/bin/mmcli -L

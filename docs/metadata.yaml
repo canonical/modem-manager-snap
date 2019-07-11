@@ -1,0 +1,35 @@
+site_title: ModemManager documentation
+site_logo_url: https://assets.ubuntu.com/v1/c5cb0f8e-picto-ubuntu.svg
+navigation:
+  - title: Introduction
+    children:
+      - title: About ModemManager
+        location: index.md
+  - title: Install & Configure
+    children:
+      - title: Install ModemManager
+        location: installation.md
+      - title: Gathering Modem Information
+        location: gathering-modem-information.md
+      - title: Entering SIM Passwords
+        location: entering-sim-passwords.md
+      - title: Configuring Cellular Connections
+        location: configuring-cellular-connections.md
+  - title: Reference
+    children:
+      - title: Snap Configuration
+        children:
+          - title: Debug
+            location: reference/snap-configuration/debug.md
+      - title: Available Commands
+        location: reference/available-commands.md
+      - title: DBUS API
+        location: reference/dbus-api.md
+  - title: Troubleshoot
+    children:
+      - title: FAQ
+        location: faq.md
+  - title: Release Notes
+    location: release-notes.md
+  - title: Report a Bug
+    location: report-bug.md
