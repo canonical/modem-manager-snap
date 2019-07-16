@@ -1,0 +1,8 @@
+2019-07-16 modem-manager 1.10.0-1
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Initial implementation of a modem-manager snap based on core18. It uses bionic sources for the different parts, and therefore MM version is 1.10.
+    
+    Most of the snap related files have been imported from the core16 snap, which resides in thttps://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/master.
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/369387
+
