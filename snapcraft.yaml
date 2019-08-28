@@ -58,6 +58,13 @@ parts:
       mmcli: bin/mmcli
       mmcli-internal: bin/mmcli-internal
 
+  changelog:
+    plugin: nil
+    override-build: |
+      cp "$SNAPCRAFT_PROJECT_DIR"/ChangeLog "$SNAPCRAFT_PART_INSTALL"
+    organize:
+      ChangeLog: usr/share/doc/modem-manager/ChangeLog
+
   modemmanager-data:
     plugin: dump
     source: data
