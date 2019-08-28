@@ -9,6 +9,7 @@ description: |
   setup connections with them.
   Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
 confinement: strict
+base: core
 grade: stable
 
 slots:
