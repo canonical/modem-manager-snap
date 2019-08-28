@@ -81,9 +81,10 @@ parts:
       - libglib2.0-dev
       - libgudev-1.0-dev
 
-    install: |
+    override-build: |
+      snapcraftctl build
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find $SNAPCRAFT_PART_INSTALL/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
@@ -114,9 +115,10 @@ parts:
       - intltool
       - libglib2.0-dev
 
-    install: |
+    override-build: |
+      snapcraftctl build
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find $SNAPCRAFT_PART_INSTALL/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
@@ -191,11 +193,12 @@ parts:
       - libgudev-1.0-dev
       - libglib2.0-doc
 
-    install: |
+    override-build: |
+      snapcraftctl build
       # Run all tests ModemManager ships by default
       make check
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find $SNAPCRAFT_PART_INSTALL/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
