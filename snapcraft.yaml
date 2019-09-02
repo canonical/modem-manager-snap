@@ -9,6 +9,7 @@ description: |
   setup connections with them.
   Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
 confinement: strict
+base: core
 grade: stable
 
 slots:
@@ -25,7 +26,6 @@ apps:
   mmcli:
     command: bin/mmcli
     plugs: [mmcli]
-    aliases: [mmcli]
   modemmanager:
     command: bin/modemmanager
     daemon: simple
@@ -58,6 +58,13 @@ parts:
       mmcli: bin/mmcli
       mmcli-internal: bin/mmcli-internal
 
+  changelog:
+    plugin: nil
+    override-build: |
+      cp "$SNAPCRAFT_PROJECT_DIR"/ChangeLog "$SNAPCRAFT_PART_INSTALL"
+    organize:
+      ChangeLog: usr/share/doc/modem-manager/ChangeLog
+
   modemmanager-data:
     plugin: dump
     source: data
@@ -81,9 +88,10 @@ parts:
       - libglib2.0-dev
       - libgudev-1.0-dev
 
-    install: |
+    override-build: |
+      snapcraftctl build
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find $SNAPCRAFT_PART_INSTALL/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
@@ -114,9 +122,10 @@ parts:
       - intltool
       - libglib2.0-dev
 
-    install: |
+    override-build: |
+      snapcraftctl build
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find $SNAPCRAFT_PART_INSTALL/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
@@ -191,11 +200,12 @@ parts:
       - libgudev-1.0-dev
       - libglib2.0-doc
 
-    install: |
+    override-build: |
+      snapcraftctl build
       # Run all tests ModemManager ships by default
       make check
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find $SNAPCRAFT_PART_INSTALL/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
