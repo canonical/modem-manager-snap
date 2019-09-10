@@ -64,6 +64,13 @@ parts:
     organize:
       copyright: usr/share/doc/modem-manager/copyright
 
+  changelog:
+    plugin: nil
+    override-build: |
+      cp "$SNAPCRAFT_PROJECT_DIR"/ChangeLog "$SNAPCRAFT_PART_INSTALL"
+    organize:
+      ChangeLog: usr/share/doc/modem-manager/ChangeLog
+
   libmbim:
     plugin: autotools
 
