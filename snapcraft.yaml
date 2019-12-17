@@ -92,7 +92,7 @@ parts:
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am ../../../patch/libmbim/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/libmbim/*.patch
 
     override-build: |
       ./autogen.sh
@@ -133,7 +133,7 @@ parts:
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am ../../../patch/libqmi/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/libqmi/*.patch
 
     override-build: |
       ./autogen.sh
@@ -214,7 +214,7 @@ parts:
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am ../../../patch/modemmanager/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/modemmanager/*.patch
 
     override-build: |
       ./autogen.sh
