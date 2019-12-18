@@ -92,7 +92,7 @@ parts:
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am ../../../patch/libmbim/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/libmbim/*.patch
 
     override-build: |
       ./autogen.sh
@@ -133,7 +133,7 @@ parts:
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am ../../../patch/libqmi/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/libqmi/*.patch
 
     override-build: |
       ./autogen.sh
@@ -173,7 +173,9 @@ parts:
       - CFLAGS=-O2 -I$SNAPCRAFT_PART_INSTALL/usr/include -I$SNAPCRAFT_PART_INSTALL/usr/include/x86_64-linux-gnu -I$SNAPCRAFT_STAGE/include
 
     build-packages:
+      - automake
       - intltool
+      - gnome-common
       - gtk-doc-tools
       - libdbus-glib-1-dev
       - libdbus-1-dev
@@ -185,6 +187,7 @@ parts:
       - libnss3-dev
       - libgnutls28-dev
       - libgcrypt11-dev
+      - libtool
       - libxml-parser-perl
       - uuid-dev
       - libsystemd-dev
@@ -203,22 +206,15 @@ parts:
       - python-gi
 
     stage-packages:
-      - automake
-      - libtool
-      - intltool
-      - gtk-doc-tools
-      - gnome-common
-      - gobject-introspection
-      - libgirepository1.0-dev
-      - libglib2.0-dev
-      - libgudev-1.0-dev
-      - libglib2.0-doc
+      - libglib2.0-0
+      - libgudev-1.0-0
+      - libpcre3
 
     override-pull: |
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am ../../../patch/modemmanager/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/modemmanager/*.patch
 
     override-build: |
       ./autogen.sh
