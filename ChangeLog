@@ -1,3 +1,345 @@
+2020-01-07 modem-manager 1.10.0-2
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * snap: copy changelog to the snap package
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/372524
+  * None
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/376954
+  * Remove staged packages for libraries already in the core snap
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377051
+  * Add a phony part that does two things:
+    1. Stages packages that get built from the same sources as other parts
+       in the snapcraft recipe. For instance, we build modemmanager part
+       from the ubuntu sources that are also used to build the modemmanager
+       deb package, so we stage said package. This way we make sure that
+       when USNs linked to the debian packages appear we get notifications
+       from the store.
+    2. Second, this part calls a python script that checks that the version
+       of the staged deb package is the same as the version used to build
+       the related part, and fails if they are not the same. This way,
+       whenever we build a new snap, it will fail if we are using an old
+       version of the package sources. With this we address the problem that
+       might happen if we build a new snap so we stage the latest version of
+       the deb packages (whichs gets reflected in manifest.yaml), but we do
+       not actually update the sources that we used to build the part. The
+       store would not send USNs that actually apply as what it does is
+       checking the manifest.yaml file.
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/376895
+
+  [ Changes in staged packages ]
+  
+  libmm-glib0 (1.10.0-1~ubuntu18.04.2): new staged package
+  
+  libmbim-glib4 (1.18.0-1~ubuntu18.04.1): new staged package
+  
+  libqmi-proxy (1.22.0-1.2~ubuntu18.04.1): new staged package
+  
+  modemmanager (1.10.0-1~ubuntu18.04.2): new staged package
+  
+  libqmi-glib5 (1.22.0-1.2~ubuntu18.04.1): new staged package
+  
+  libmbim-proxy (1.18.0-1~ubuntu18.04.1): new staged package
+  
+  libpolkit-gobject-1-0 (0.105-20ubuntu0.18.04.5): new staged package
+  
+  gir1.2-freedesktop: not staged anymore
+  
+  binutils-x86-64-linux-gnu: not staged anymore
+  
+  ca-certificates: not staged anymore
+  
+  python2.7-minimal: not staged anymore
+  
+  g++-7: not staged anymore
+  
+  python-pbr: not staged anymore
+  
+  libsigsegv2: not staged anymore
+  
+  libpcre3-dev: not staged anymore
+  
+  libglib2.0-dev: not staged anymore
+  
+  libicu60: not staged anymore
+  
+  pkg-config: not staged anymore
+  
+  python-pkg-resources: not staged anymore
+  
+  liblsan0: not staged anymore
+  
+  libglib2.0-data: not staged anymore
+  
+  libwww-perl: not staged anymore
+  
+  libgdbm-compat4: not staged anymore
+  
+  libpcre32-3: not staged anymore
+  
+  mime-support: not staged anymore
+  
+  automake: not staged anymore
+  
+  python3: not staged anymore
+  
+  libglib2.0-doc: not staged anymore
+  
+  libffi-dev: not staged anymore
+  
+  docbook: not staged anymore
+  
+  gir1.2-gudev-1.0: not staged anymore
+  
+  autopoint: not staged anymore
+  
+  highlight: not staged anymore
+  
+  libgomp1: not staged anymore
+  
+  python3-markupsafe: not staged anymore
+  
+  libreadline7: not staged anymore
+  
+  python-mock: not staged anymore
+  
+  libgirepository-1.0-1: not staged anymore
+  
+  cpp-7: not staged anymore
+  
+  libtry-tiny-perl: not staged anymore
+  
+  libbinutils: not staged anymore
+  
+  xsltproc: not staged anymore
+  
+  libpython3.6-minimal: not staged anymore
+  
+  libnet-ssleay-perl: not staged anymore
+  
+  docbook-xml: not staged anymore
+  
+  libexpat1: not staged anymore
+  
+  gnome-common: not staged anymore
+  
+  libgudev-1.0-dev: not staged anymore
+  
+  libunistring2: not staged anymore
+  
+  libatomic1: not staged anymore
+  
+  libwww-robotrules-perl: not staged anymore
+  
+  libhtml-parser-perl: not staged anymore
+  
+  gobject-introspection: not staged anymore
+  
+  gcc-8-base: not staged anymore
+  
+  liblua5.2-0: not staged anymore
+  
+  libpython-stdlib: not staged anymore
+  
+  autoconf-archive: not staged anymore
+  
+  libtool: not staged anymore
+  
+  perl-modules-5.26: not staged anymore
+  
+  python-minimal: not staged anymore
+  
+  libc6-dev: not staged anymore
+  
+  gtk-doc-tools: not staged anymore
+  
+  gir1.2-glib-2.0: not staged anymore
+  
+  libosp5: not staged anymore
+  
+  autoconf: not staged anymore
+  
+  libdpkg-perl: not staged anymore
+  
+  zlib1g-dev: not staged anymore
+  
+  libmpfr6: not staged anymore
+  
+  python: not staged anymore
+  
+  python3-minimal: not staged anymore
+  
+  python3.6: not staged anymore
+  
+  libgmp10: not staged anymore
+  
+  libssl1.1: not staged anymore
+  
+  perl: not staged anymore
+  
+  python3-lib2to3: not staged anymore
+  
+  libencode-locale-perl: not staged anymore
+  
+  python2.7: not staged anymore
+  
+  libitm1: not staged anymore
+  
+  sgml-base: not staged anymore
+  
+  libpython2.7-stdlib: not staged anymore
+  
+  libnet-http-perl: not staged anymore
+  
+  libtsan0: not staged anymore
+  
+  libio-socket-ssl-perl: not staged anymore
+  
+  python3-mako: not staged anymore
+  
+  libgdbm5: not staged anymore
+  
+  cpp: not staged anymore
+  
+  binutils: not staged anymore
+  
+  libcc1-0: not staged anymore
+  
+  libhttp-negotiate-perl: not staged anymore
+  
+  libpython3.6-stdlib: not staged anymore
+  
+  libasan4: not staged anymore
+  
+  gettext-base: not staged anymore
+  
+  libhttp-cookies-perl: not staged anymore
+  
+  binutils-common: not staged anymore
+  
+  perl-openssl-defaults: not staged anymore
+  
+  python3-distutils: not staged anymore
+  
+  liburi-perl: not staged anymore
+  
+  libelf1: not staged anymore
+  
+  python-funcsigs: not staged anymore
+  
+  libio-html-perl: not staged anymore
+  
+  m4: not staged anymore
+  
+  gcc-7: not staged anymore
+  
+  intltool: not staged anymore
+  
+  libfile-listing-perl: not staged anymore
+  
+  libc-dev-bin: not staged anymore
+  
+  libsqlite3-0: not staged anymore
+  
+  xml-core: not staged anymore
+  
+  autotools-dev: not staged anymore
+  
+  docbook-to-man: not staged anymore
+  
+  libmpx2: not staged anymore
+  
+  libperl5.26: not staged anymore
+  
+  libxslt1.1: not staged anymore
+  
+  libquadmath0: not staged anymore
+  
+  libpcrecpp0v5: not staged anymore
+  
+  make: not staged anymore
+  
+  libpython2.7-minimal: not staged anymore
+  
+  libhtml-tagset-perl: not staged anymore
+  
+  libgirepository1.0-dev: not staged anymore
+  
+  netbase: not staged anymore
+  
+  highlight-common: not staged anymore
+  
+  libgcc-7-dev: not staged anymore
+  
+  g++: not staged anymore
+  
+  gettext: not staged anymore
+  
+  openssl: not staged anymore
+  
+  libglib2.0-dev-bin: not staged anymore
+  
+  linux-libc-dev: not staged anymore
+  
+  libhtml-tree-perl: not staged anymore
+  
+  opensp: not staged anymore
+  
+  libxml2: not staged anymore
+  
+  gcc: not staged anymore
+  
+  patch: not staged anymore
+  
+  libpcre16-3: not staged anymore
+  
+  libhttp-date-perl: not staged anymore
+  
+  dpkg-dev: not staged anymore
+  
+  libtimedate-perl: not staged anymore
+  
+  liblwp-mediatypes-perl: not staged anymore
+  
+  libcroco3: not staged anymore
+  
+  libxml-parser-perl: not staged anymore
+  
+  bzip2: not staged anymore
+  
+  gcc-7-base: not staged anymore
+  
+  libubsan0: not staged anymore
+  
+  libglib2.0-bin: not staged anymore
+  
+  libpython3-stdlib: not staged anymore
+  
+  docbook-xsl: not staged anymore
+  
+  libmpdec2: not staged anymore
+  
+  sgml-data: not staged anymore
+  
+  libisl19: not staged anymore
+  
+  libmpc3: not staged anymore
+  
+  python-six: not staged anymore
+  
+  liblwp-protocol-https-perl: not staged anymore
+  
+  libstdc++-7-dev: not staged anymore
+  
+  libhttp-message-perl: not staged anymore
+  
+  libcilkrts5: not staged anymore
+  
+  xz-utils: not staged anymore
+  
+  build-essential: not staged anymore
+  
+  python3.6-minimal: not staged anymore
+  
 2019-07-16 modem-manager 1.10.0-1
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
