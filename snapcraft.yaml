@@ -246,18 +246,6 @@ parts:
         - usr/lib/*/libgudev-1.0.so*
         - usr/lib/libmm-glib.so*
         - usr/share/doc/libgudev-1.0-0/
-        # Following libraries could also be pulled from core
-        - usr/lib/*/libgmodule-2.0.so*
-        - usr/lib/*/libgio-2.0.so*
-        - usr/lib/*/libgobject-2.0.so*
-        - usr/lib/*/libglib-2.0.so*
-        - usr/lib/*/libffi.so*
-        - usr/lib/*/libpcre.so*
-        - lib/*/libglib-2.0.so*
-        - lib/*/libpcre.so*
-        - usr/share/doc/libglib2.0-*
-        - usr/share/doc/libffi6/
-        - usr/share/doc/libpcre*
 
     prime:
       - $wanted
