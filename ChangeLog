@@ -1,3 +1,13 @@
+2020-01-14 modem-manager 1.10.0-3
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Remove libraries already in the core snap
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377318
+
+  [ Changes in staged packages ]
+  
+  No changes for staged packages
+  
 2020-01-07 modem-manager 1.10.0-2
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
