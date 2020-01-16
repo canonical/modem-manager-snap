@@ -1,3 +1,294 @@
+2020-01-16 modem-manager 1.8.0-11
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * * Copy ChangeLog file to snap package
+    * Fix some snapcraft warnings
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/371928
+  * Reduce to the minimum the staged packages
+    
+    There were many packages that were not actually included in the snap,
+    and some others are already part of core, like glib and libpcre.
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377004
+  * Use 'interface' when defining plugs and slots
+    
+    Define the plug/slot in the 'interface' field of a dictionary instead of
+    using directly the name. This workarounds a regression in snapcraft
+    3.9.5 (LP: #1859806).
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377650
+
+  [ Changes in staged packages ]
+  
+  libglib2.0-0 (built from glib2.0) updated from 2.48.2-0ubuntu4.2 to 2.48.2-0ubuntu4.4:
+  
+    glib2.0 (2.48.2-0ubuntu4.4) xenial-security; urgency=medium
+  
+      * SECURITY REGRESSION: regression in last security update (LP: #1838890)
+        - debian/patches/CVE-2019-13012-regression.patch: fix a
+          memory leak introduced by the last security update while
+          not properly handled the g_file_get_patch function in
+          gio/gkeyfilesettingsbackend.c.
+  
+     -- Leonidas S. Barbosa <leo.barbosa@canonical.com>  Mon, 05 Aug 2019 12:09:36 -0300
+  
+    glib2.0 (2.48.2-0ubuntu4.3) xenial-security; urgency=medium
+  
+      * SECURITY UPDATE: Not properly restrict directory and file permissions
+        - debian/patches/CVE-2019-13012.patch: changes the permissions when
+          a directory is created, using 700 instead 777 in
+          gio/gkeyfilesettingsbackend.c and changes test to run in a temp
+          directory in gio/tests/gsettings.c.
+        - CVE-2019-13012
+  
+     -- Leonidas S. Barbosa <leo.barbosa@canonical.com>  Wed, 03 Jul 2019 15:24:33 -0300
+  
+  libgmp10: not staged anymore
+  
+  python-minimal: not staged anymore
+  
+  libcc1-0: not staged anymore
+  
+  libicu55: not staged anymore
+  
+  liburi-perl: not staged anymore
+  
+  libglib2.0-doc: not staged anymore
+  
+  libhttp-date-perl: not staged anymore
+  
+  libatomic1: not staged anymore
+  
+  docbook-to-man: not staged anymore
+  
+  sgml-data: not staged anymore
+  
+  autotools-dev: not staged anymore
+  
+  libpython2.7-stdlib: not staged anymore
+  
+  autopoint: not staged anymore
+  
+  libxslt1.1: not staged anymore
+  
+  gir1.2-freedesktop: not staged anymore
+  
+  libpython-stdlib: not staged anymore
+  
+  libmpc3: not staged anymore
+  
+  libpcrecpp0v5: not staged anymore
+  
+  liblwp-protocol-https-perl: not staged anymore
+  
+  libencode-locale-perl: not staged anymore
+  
+  perl: not staged anymore
+  
+  libsigsegv2: not staged anymore
+  
+  libhtml-parser-perl: not staged anymore
+  
+  gcc: not staged anymore
+  
+  liblwp-mediatypes-perl: not staged anymore
+  
+  libglib2.0-data: not staged anymore
+  
+  pkg-config: not staged anymore
+  
+  netbase: not staged anymore
+  
+  gettext: not staged anymore
+  
+  python-mako: not staged anymore
+  
+  libglib2.0-bin: not staged anymore
+  
+  docbook: not staged anymore
+  
+  libcroco3: not staged anymore
+  
+  cpp-5: not staged anymore
+  
+  libpcre16-3: not staged anymore
+  
+  libc-dev-bin: not staged anymore
+  
+  zlib1g-dev: not staged anymore
+  
+  libpython2.7-minimal: not staged anymore
+  
+  libhtml-tree-perl: not staged anymore
+  
+  bzip2: not staged anymore
+  
+  gobject-introspection: not staged anymore
+  
+  docbook-xml: not staged anymore
+  
+  libitm1: not staged anymore
+  
+  perl-modules-5.22: not staged anymore
+  
+  intltool: not staged anymore
+  
+  libsqlite3-0: not staged anymore
+  
+  libelf1: not staged anymore
+  
+  libasprintf0v5: not staged anymore
+  
+  libio-html-perl: not staged anymore
+  
+  libwww-robotrules-perl: not staged anymore
+  
+  liblsan0: not staged anymore
+  
+  libgomp1: not staged anymore
+  
+  m4: not staged anymore
+  
+  libc6-dev: not staged anymore
+  
+  libhtml-tagset-perl: not staged anymore
+  
+  xsltproc: not staged anymore
+  
+  python: not staged anymore
+  
+  libtimedate-perl: not staged anymore
+  
+  autoconf: not staged anymore
+  
+  python-markupsafe: not staged anymore
+  
+  libhttp-message-perl: not staged anymore
+  
+  g++-5: not staged anymore
+  
+  libhttp-cookies-perl: not staged anymore
+  
+  jade: not staged anymore
+  
+  libffi-dev: not staged anymore
+  
+  libwww-perl: not staged anymore
+  
+  libxml-parser-perl: not staged anymore
+  
+  libglib2.0-dev: not staged anymore
+  
+  libpcre32-3: not staged anymore
+  
+  libtool: not staged anymore
+  
+  libsp1c2: not staged anymore
+  
+  libexpat1: not staged anymore
+  
+  dpkg-dev: not staged anymore
+  
+  libssl1.0.0: not staged anymore
+  
+  xml-core: not staged anymore
+  
+  openssl: not staged anymore
+  
+  libpcre3-dev: not staged anymore
+  
+  libstdc++-5-dev: not staged anymore
+  
+  libmpx0: not staged anymore
+  
+  libgcc-5-dev: not staged anymore
+  
+  gir1.2-gudev-1.0: not staged anymore
+  
+  gtk-doc-tools: not staged anymore
+  
+  patch: not staged anymore
+  
+  gnome-common: not staged anymore
+  
+  gcc-5: not staged anymore
+  
+  binutils: not staged anymore
+  
+  xz-utils: not staged anymore
+  
+  libgdbm3: not staged anymore
+  
+  python2.7-minimal: not staged anymore
+  
+  g++: not staged anymore
+  
+  gettext-base: not staged anymore
+  
+  libfile-listing-perl: not staged anymore
+  
+  libisl15: not staged anymore
+  
+  autoconf-archive: not staged anymore
+  
+  ca-certificates: not staged anymore
+  
+  build-essential: not staged anymore
+  
+  linux-libc-dev: not staged anymore
+  
+  libubsan0: not staged anymore
+  
+  sp: not staged anymore
+  
+  libnet-http-perl: not staged anymore
+  
+  libtsan0: not staged anymore
+  
+  mime-support: not staged anymore
+  
+  gir1.2-glib-2.0: not staged anymore
+  
+  libio-socket-ssl-perl: not staged anymore
+  
+  libmpfr4: not staged anymore
+  
+  make: not staged anymore
+  
+  libhttp-negotiate-perl: not staged anymore
+  
+  libxml2: not staged anymore
+  
+  libgirepository1.0-dev: not staged anymore
+  
+  python2.7: not staged anymore
+  
+  docbook-xsl: not staged anymore
+  
+  libasan2: not staged anymore
+  
+  docbook-dsssl: not staged anymore
+  
+  libgirepository-1.0-1: not staged anymore
+  
+  libperl5.22: not staged anymore
+  
+  libgudev-1.0-dev: not staged anymore
+  
+  libcilkrts5: not staged anymore
+  
+  libnet-ssleay-perl: not staged anymore
+  
+  libdpkg-perl: not staged anymore
+  
+  sgml-base: not staged anymore
+  
+  cpp: not staged anymore
+  
+  automake: not staged anymore
+  
+  libquadmath0: not staged anymore
+  
+  libunistring0: not staged anymore
+  
 2019-06-24 modem-manager 1.8.0-10
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
