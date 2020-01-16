@@ -13,10 +13,12 @@ base: core
 grade: stable
 
 slots:
-  service: modem-manager
+  service:
+    interface: modem-manager
 
 plugs:
-  mmcli: modem-manager
+  mmcli:
+    interface: modem-manager
 
 hooks:
   configure:
