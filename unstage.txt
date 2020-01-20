@@ -1,0 +1,3 @@
+libffi6
+libglib2.0-0
+libpolkit-gobject-1-0
