@@ -1,3 +1,26 @@
+2020-01-20 modem-manager 1.10.0-4
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Remove libraries already in the core snap
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377318
+  * Use stack-snaps-tools instead of tests-extras:
+    tests-extras repo is now deprecated.
+    
+    Add unstage.txt file:
+    This file contains a list of debian package that we are not actually
+    staging, although snapcraft adds them to manifest.yaml. CI now
+    recognizes this file, and manually removes the listed packages from the
+    manifest when releasing a snap to the store.
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377820
+
+  [ Changes in staged packages ]
+  
+  libglib2.0-0: not staged anymore
+  
+  libpolkit-gobject-1-0: not staged anymore
+  
+  libffi6: not staged anymore
+  
 2020-01-14 modem-manager 1.10.0-3
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
