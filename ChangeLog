@@ -1,3 +1,19 @@
+2020-01-21 modem-manager 1.8.0-12
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Add unstage.txt file
+    This file contains a list of debian package that we are not actually
+    staging, although snapcraft adds them to manifest.yaml. CI now
+    recognizes this file, and manually removes the listed packages from the
+    manifest when releasing a snap to the store.
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/377868
+
+  [ Changes in staged packages ]
+  
+  libffi6: not staged anymore
+  
+  libglib2.0-0: not staged anymore
+  
 2020-01-16 modem-manager 1.8.0-11
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
