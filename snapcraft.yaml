@@ -152,24 +152,6 @@ parts:
     prime:
       - $wanted
 
-  # This part is to make sure we get notifications from the review tools
-  modemmanager-phony:
-    plugin: nil
-    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/stack-snaps-tools
-    source-type: git
-    build-packages:
-      - python3-minimal
-      - python3-yaml
-    stage-packages:
-      - libmbim-proxy
-      - libqmi-proxy
-      - modemmanager
-    # Check versions and make sure nothing from the staged packages is installed
-    override-build: |
-      ./build-tools/cmp-stage-build.py \
-          libmbim libmbim-proxy libqmi libqmi-proxy modemmanager modemmanager
-      rm -rf ../install/*
-
   modemmanager:
     after: [ libmbim, libqmi ]
     plugin: autotools
@@ -249,3 +231,28 @@ parts:
 
     prime:
       - $wanted
+
+  # This part is to make sure we get notifications from the review tools
+  modemmanager-phony:
+    after: [ libmbim, libqmi, modemmanager, changelog, modemmanager-hooks,
+             modemmanager-bin, modemmanager-data ]
+    plugin: nil
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/stack-snaps-tools
+    source-type: git
+    build-packages:
+      - python3-minimal
+      - python3-yaml
+    stage-packages:
+      - libmbim-proxy
+      - libqmi-proxy
+      - modemmanager
+    # Check versions and make sure nothing from the staged packages is installed
+    override-build: |
+      ./build-tools/cmp-stage-build.py \
+          libmbim libmbim-proxy libqmi libqmi-proxy modemmanager modemmanager
+      rm -rf ../install/*
+    # Find out packages not primed in the end, for CI consumption
+    override-prime: |
+      mkdir -p snap
+      "$SNAPCRAFT_PART_SRC"/build-tools/find-non-primed-pkgs.sh \
+          "$SNAPCRAFT_PROJECT_DIR" snap/unstage.txt
