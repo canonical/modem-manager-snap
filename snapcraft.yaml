@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.10.0-5-dev
+version: 1.12.6-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -7,10 +7,10 @@ description: |
   bluetooth-paired telephones or professional RS232/USB devices with external
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
-  Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager
+  Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-1.12
 confinement: strict
 grade: stable
-base: core18
+base: core20
 
 slots:
   service: modem-manager
@@ -22,6 +22,14 @@ hooks:
   configure:
     plugs: [mmcli]
 
+layout:
+  /usr/lib/ModemManager:
+    symlink: $SNAP/usr/lib/ModemManager
+  /usr/lib/libqmi/qmi-proxy:
+    symlink: $SNAP/usr/lib/libqmi/qmi-proxy
+  /usr/lib/libmbim/mbim-proxy:
+    symlink: $SNAP/usr/lib/libmbim/mbim-proxy
+
 apps:
   mmcli:
     command: bin/mmcli
@@ -31,16 +39,16 @@ apps:
     daemon: simple
     slots: [service]
   mbimcli:
-    command: bin/mbimcli
+    command: usr/bin/mbimcli
     slots: [service]
   mbim-network:
-    command: bin/mbim-network
+    command: usr/bin/mbim-network
     slots: [service]
   qmicli:
-    command: bin/qmicli
+    command: usr/bin/qmicli
     slots: [service]
   qmi-network:
-    command: bin/qmi-network
+    command: usr/bin/qmi-network
     slots: [service]
 
 parts:
@@ -71,94 +79,12 @@ parts:
     organize:
       ChangeLog: usr/share/doc/modem-manager/ChangeLog
 
-  libmbim:
-    plugin: autotools
-
-    source: https://git.launchpad.net/ubuntu/+source/libmbim
-    source-type: git
-    source-branch: applied/1.18.0-1_ubuntu18.04.1
-
-    configflags:
-      - --with-udev
-      - --libexecdir=/usr/lib/libmbim
-      # Set explicitly CFLAGS until lp: #1791946 is solved
-      - CFLAGS=-O2
-
-    build-packages:
-      - libglib2.0-dev
-      - libgudev-1.0-dev
-
-    override-pull: |
-      snapcraftctl pull
-      git config user.email "snapcraft@canonical.com"
-      git config user.name "snapcraft"
-      git am "$SNAPCRAFT_PROJECT_DIR"/patch/libmbim/*.patch
-
-    override-build: |
-      ./autogen.sh
-      snapcraftctl build
-      # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
-          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
-
-    filesets:
-      wanted:
-        - lib/libmbim-glib.so*
-        - usr/lib/libmbim/mbim-proxy
-        - bin/mbimcli
-        - bin/mbim-network
-
-    prime:
-      - $wanted
-
-  libqmi:
-    after: [ libmbim ]
-    plugin: autotools
-
-    source: https://git.launchpad.net/ubuntu/+source/libqmi
-    source-type: git
-    source-branch: applied/1.22.0-1.2_ubuntu18.04.1
-
-    configflags:
-      - --enable-mbim-qmux
-      - --libexecdir=/usr/lib/libqmi
-      # Set explicitly CFLAGS until lp: #1791946 is solved
-      - CFLAGS=-O2 -I$SNAPCRAFT_STAGE/include
-
-    build-packages:
-      - intltool
-      - libglib2.0-dev
-
-    override-pull: |
-      snapcraftctl pull
-      git config user.email "snapcraft@canonical.com"
-      git config user.name "snapcraft"
-      git am "$SNAPCRAFT_PROJECT_DIR"/patch/libqmi/*.patch
-
-    override-build: |
-      ./autogen.sh
-      snapcraftctl build
-      # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
-          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
-
-    filesets:
-      wanted:
-        - lib/libqmi-glib.so*
-        - usr/lib/libqmi/qmi-proxy
-        - bin/qmicli
-        - bin/qmi-network
-
-    prime:
-      - $wanted
-
   modemmanager:
-    after: [ libmbim, libqmi ]
     plugin: autotools
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/1.10.0-1_ubuntu18.04.2
+    source-branch: applied/1.12.6-1
 
     configflags:
       - --prefix=/usr
@@ -168,9 +94,8 @@ parts:
       - --enable-gtk-doc=no
       - --with-polkit=no
       - --enable-vala=no
-      - --enable-tests=yes
       # Set explicitly CFLAGS until lp: #1791946 is solved
-      - CFLAGS=-O2 -I$SNAPCRAFT_PART_INSTALL/usr/include -I$SNAPCRAFT_PART_INSTALL/usr/include/x86_64-linux-gnu -I$SNAPCRAFT_STAGE/include
+      - CFLAGS=-O2
 
     build-packages:
       - intltool
@@ -184,7 +109,6 @@ parts:
       - libnl-genl-3-dev
       - libnss3-dev
       - libgnutls28-dev
-      - libgcrypt11-dev
       - libxml-parser-perl
       - uuid-dev
       - libsystemd-dev
@@ -201,15 +125,23 @@ parts:
       - dbus-test-runner
       - python-dbus
       - python-gi
+      - libqmi-glib-dev
+      - libmbim-glib-dev
 
     stage-packages:
+      - libqmi-glib5
+      - libqmi-proxy
+      - libqmi-utils
+      - libmbim-glib4
+      - libmbim-proxy
+      - libmbim-utils
       - libgudev-1.0-0
 
     override-pull: |
       snapcraftctl pull
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am "$SNAPCRAFT_PROJECT_DIR"/patch/modemmanager/*.patch
+      git am "$SNAPCRAFT_PROJECT_DIR"/patch/*.patch
 
     override-build: |
       ./autogen.sh
@@ -227,14 +159,28 @@ parts:
         - usr/lib/ModemManager/
         - usr/lib/*/libgudev-1.0.so*
         - usr/lib/libmm-glib.so*
-        - usr/share/doc/libgudev-1.0-0/
+        - usr/share/doc/libgudev-1.0-0/copyright
+        - usr/lib/*/libmbim-glib.so*
+        - usr/lib/libmbim/mbim-proxy
+        - usr/bin/mbimcli
+        - usr/bin/mbim-network
+        - usr/share/doc/libmbim-glib4/copyright
+        - usr/share/doc/libmbim-proxy/copyright
+        - usr/share/doc/libmbim-utils/copyright
+        - usr/lib/*/libqmi-glib.so*
+        - usr/lib/libqmi/qmi-proxy
+        - usr/bin/qmicli
+        - usr/bin/qmi-network
+        - usr/share/doc/libqmi-glib5/copyright
+        - usr/share/doc/libqmi-proxy/copyright
+        - usr/share/doc/libqmi-utils/copyright
 
     prime:
       - $wanted
 
   # This part is to make sure we get notifications from the review tools
   modemmanager-phony:
-    after: [ libmbim, libqmi, modemmanager, changelog, modemmanager-hooks,
+    after: [ modemmanager, changelog, modemmanager-hooks,
              modemmanager-bin, modemmanager-data ]
     plugin: nil
     source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/stack-snaps-tools
@@ -243,13 +189,10 @@ parts:
       - python3-minimal
       - python3-yaml
     stage-packages:
-      - libmbim-proxy
-      - libqmi-proxy
       - modemmanager
     # Check versions and make sure nothing from the staged packages is installed
     override-build: |
-      ./build-tools/cmp-stage-build.py \
-          libmbim libmbim-proxy libqmi libqmi-proxy modemmanager modemmanager
+      ./build-tools/cmp-stage-build.py modemmanager modemmanager
       rm -rf ../install/*
     # Find out packages not primed in the end, for CI consumption
     override-prime: |
