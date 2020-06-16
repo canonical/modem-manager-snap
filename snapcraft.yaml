@@ -86,7 +86,7 @@ parts:
     source-type: git
     source-branch: applied/1.12.6-1
 
-    configflags:
+    autotools-configure-parameters:
       - --prefix=/usr
       - --libdir=/usr/lib
       - --libexecdir=/usr/lib/ModemManager
