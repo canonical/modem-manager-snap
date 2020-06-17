@@ -7,7 +7,8 @@ description: |
   bluetooth-paired telephones or professional RS232/USB devices with external
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
-  Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-1.12
+  Please find the source code at
+  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-1.12
 confinement: strict
 grade: stable
 base: core20
