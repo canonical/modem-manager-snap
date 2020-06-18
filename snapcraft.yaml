@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.12.6-1-dev
+version: 1.12.8-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -7,7 +7,8 @@ description: |
   bluetooth-paired telephones or professional RS232/USB devices with external
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
-  Please find the source code at https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-1.12
+  Please find the source code at
+  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-1.12
 confinement: strict
 grade: stable
 base: core20
@@ -84,9 +85,9 @@ parts:
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/1.12.6-1
+    source-branch: applied/1.12.8-1
 
-    configflags:
+    autotools-configure-parameters:
       - --prefix=/usr
       - --libdir=/usr/lib
       - --libexecdir=/usr/lib/ModemManager
@@ -192,10 +193,10 @@ parts:
       - modemmanager
     # Check versions and make sure nothing from the staged packages is installed
     override-build: |
-      ./build-tools/cmp-stage-build.py modemmanager modemmanager
+      #./build-tools/cmp-stage-build.py modemmanager modemmanager
       rm -rf ../install/*
     # Find out packages not primed in the end, for CI consumption
-    override-prime: |
-      mkdir -p snap
-      "$SNAPCRAFT_PART_SRC"/build-tools/find-non-primed-pkgs.sh \
-          "$SNAPCRAFT_PROJECT_DIR" snap/unstage.txt
+    #override-prime: |
+    #  mkdir -p snap
+    #  "$SNAPCRAFT_PART_SRC"/build-tools/find-non-primed-pkgs.sh \
+    #      "$SNAPCRAFT_PROJECT_DIR" snap/unstage.txt
