@@ -74,6 +74,32 @@ parts:
     organize:
       ChangeLog: snap/ChangeLog
 
+  # Get aux scripts so they can be used in other parts. Also, stage
+  # packages we rebuild later to get copyright and ensure they are in
+  # the manifest.
+  stack-snaps-tools:
+    plugin: nil
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/stack-snaps-tools
+    source-type: git
+    build-packages:
+      - dpkg-dev
+      - git
+    stage-packages:
+      - modemmanager
+      - libmm-glib0
+    override-build: |
+      set -ex
+      find "$SNAPCRAFT_PART_INSTALL"/ -type f,l \
+                -not -path "$SNAPCRAFT_PART_INSTALL"/'usr/share/doc/modemmanager*' \
+           -and -not -path "$SNAPCRAFT_PART_INSTALL"/'usr/share/doc/libmm-glib0*' \
+           -delete
+      find "$SNAPCRAFT_PART_INSTALL"/ -type d -empty -delete
+      mkdir -p "$SNAPCRAFT_PART_INSTALL"/build-tools
+      cp build-tools/* "$SNAPCRAFT_PART_INSTALL"/build-tools
+    prime:
+      - usr/share/doc/modemmanager
+      - usr/share/doc/libmm-glib0
+
   modemmanager:
     plugin: autotools
 
