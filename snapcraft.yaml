@@ -67,12 +67,6 @@ parts:
       mmcli: bin/mmcli
       mmcli-internal: bin/mmcli-internal
 
-  modemmanager-data:
-    plugin: dump
-    source: data
-    organize:
-      copyright: usr/share/doc/modem-manager/copyright
-
   changelog:
     plugin: nil
     override-build: |
