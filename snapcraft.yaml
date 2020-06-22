@@ -179,7 +179,7 @@ parts:
       wanted:
         - usr/bin/mmcli
         - usr/sbin/ModemManager
-        - usr/lib/ModemManager/
+        - usr/lib/ModemManager/*so
         - usr/lib/*/libgudev-1.0.so*
         - usr/lib/libmm-glib.so*
         - usr/share/doc/libgudev-1.0-0/copyright
