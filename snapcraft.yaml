@@ -102,6 +102,7 @@ parts:
 
   modemmanager:
     plugin: autotools
+    after: [ stack-snaps-tools ]
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
