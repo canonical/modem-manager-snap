@@ -166,14 +166,13 @@ parts:
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
       git am "$SNAPCRAFT_PROJECT_DIR"/patch/*.patch
-
-    override-build: |
+      # Build
       ./autogen.sh
       snapcraftctl build
       # Run all tests ModemManager ships by default
       make check
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find "$SNAPCRAFT_PART_INSTALL"/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
