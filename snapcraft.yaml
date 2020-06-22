@@ -106,7 +106,7 @@ parts:
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/1.12.8-1
+    source-branch: applied/ubuntu/focal
 
     autotools-configure-parameters:
       - --prefix=/usr
