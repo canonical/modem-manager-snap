@@ -159,8 +159,10 @@ parts:
       - libmbim-utils
       - libgudev-1.0-0
 
-    override-pull: |
-      snapcraftctl pull
+    override-build: |
+      set -ex
+      "$SNAPCRAFT_STAGE"/build-tools/check-versions modemmanager
+      # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
       git am "$SNAPCRAFT_PROJECT_DIR"/patch/*.patch
