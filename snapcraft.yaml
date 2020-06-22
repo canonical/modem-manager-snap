@@ -67,25 +67,46 @@ parts:
       mmcli: bin/mmcli
       mmcli-internal: bin/mmcli-internal
 
-  modemmanager-data:
-    plugin: dump
-    source: data
-    organize:
-      copyright: usr/share/doc/modem-manager/copyright
-
   changelog:
     plugin: nil
     override-build: |
       cp "$SNAPCRAFT_PROJECT_DIR"/ChangeLog "$SNAPCRAFT_PART_INSTALL"
     organize:
-      ChangeLog: usr/share/doc/modem-manager/ChangeLog
+      ChangeLog: snap/ChangeLog
+
+  # Get aux scripts so they can be used in other parts. Also, stage
+  # packages we rebuild later to get copyright and ensure they are in
+  # the manifest.
+  stack-snaps-tools:
+    plugin: nil
+    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/stack-snaps-tools
+    source-type: git
+    build-packages:
+      - dpkg-dev
+      - git
+    stage-packages:
+      - modemmanager
+      - libmm-glib0
+    override-build: |
+      set -ex
+      find "$SNAPCRAFT_PART_INSTALL"/ -type f,l \
+                -not -path "$SNAPCRAFT_PART_INSTALL"/'usr/share/doc/modemmanager*' \
+           -and -not -path "$SNAPCRAFT_PART_INSTALL"/'usr/share/doc/libmm-glib0*' \
+           -delete
+      find "$SNAPCRAFT_PART_INSTALL"/ -type d -empty -delete
+      mkdir -p "$SNAPCRAFT_PART_INSTALL"/build-tools
+      cp build-tools/* "$SNAPCRAFT_PART_INSTALL"/build-tools
+    prime:
+      - usr/share/doc/modemmanager
+      - usr/share/doc/libmm-glib0
 
   modemmanager:
     plugin: autotools
+    after: [ stack-snaps-tools ]
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/1.12.8-1
+    source-branch: applied/ubuntu/focal
 
     autotools-configure-parameters:
       - --prefix=/usr
@@ -138,65 +159,44 @@ parts:
       - libmbim-utils
       - libgudev-1.0-0
 
-    override-pull: |
-      snapcraftctl pull
+    override-build: |
+      set -ex
+      "$SNAPCRAFT_STAGE"/build-tools/check-versions modemmanager
+      # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
       git am "$SNAPCRAFT_PROJECT_DIR"/patch/*.patch
-
-    override-build: |
+      # Build
       ./autogen.sh
       snapcraftctl build
       # Run all tests ModemManager ships by default
       make check
       # Strip binaries
-      find ../install -executable -type f | xargs file -Ni |
+      find "$SNAPCRAFT_PART_INSTALL"/ -executable -type f | xargs file -Ni |
           grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
 
     filesets:
       wanted:
         - usr/bin/mmcli
         - usr/sbin/ModemManager
-        - usr/lib/ModemManager/
+        - usr/lib/ModemManager/*so
         - usr/lib/*/libgudev-1.0.so*
         - usr/lib/libmm-glib.so*
-        - usr/share/doc/libgudev-1.0-0/copyright
+        - usr/share/doc/libgudev-1.0-0
         - usr/lib/*/libmbim-glib.so*
         - usr/lib/libmbim/mbim-proxy
         - usr/bin/mbimcli
         - usr/bin/mbim-network
-        - usr/share/doc/libmbim-glib4/copyright
-        - usr/share/doc/libmbim-proxy/copyright
-        - usr/share/doc/libmbim-utils/copyright
+        - usr/share/doc/libmbim-glib4
+        - usr/share/doc/libmbim-proxy
+        - usr/share/doc/libmbim-utils
         - usr/lib/*/libqmi-glib.so*
         - usr/lib/libqmi/qmi-proxy
         - usr/bin/qmicli
         - usr/bin/qmi-network
-        - usr/share/doc/libqmi-glib5/copyright
-        - usr/share/doc/libqmi-proxy/copyright
-        - usr/share/doc/libqmi-utils/copyright
+        - usr/share/doc/libqmi-glib5
+        - usr/share/doc/libqmi-proxy
+        - usr/share/doc/libqmi-utils
 
     prime:
       - $wanted
-
-  # This part is to make sure we get notifications from the review tools
-  modemmanager-phony:
-    after: [ modemmanager, changelog, modemmanager-hooks,
-             modemmanager-bin, modemmanager-data ]
-    plugin: nil
-    source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/stack-snaps-tools
-    source-type: git
-    build-packages:
-      - python3-minimal
-      - python3-yaml
-    stage-packages:
-      - modemmanager
-    # Check versions and make sure nothing from the staged packages is installed
-    override-build: |
-      #./build-tools/cmp-stage-build.py modemmanager modemmanager
-      rm -rf ../install/*
-    # Find out packages not primed in the end, for CI consumption
-    #override-prime: |
-    #  mkdir -p snap
-    #  "$SNAPCRAFT_PART_SRC"/build-tools/find-non-primed-pkgs.sh \
-    #      "$SNAPCRAFT_PROJECT_DIR" snap/unstage.txt
