@@ -9,7 +9,7 @@ The debug configuration option controls the amount of logs produced by the
 modem-manager snap. It is useful for collecting information required to either
 report a bug or investigate a modem-manager failure.
 
-It is disabled by default and has to be explicitely turned on for usage.
+It is disabled by default and has to be explicitly turned on for usage.
 
 Note that the debug logs may contain sensitive information.
 
@@ -30,14 +30,14 @@ affects future executions of the MM daemon.
 
 **Example:** Enable debug feature
 
-```
+```text
 $ snap set modem-manager debug.enable=true
 ```
 
 <br/>
 **Example:** Disable debug feature.
 
-```
+```text
 $ snap set modem-manager debug.enable=false
 ```
 
@@ -46,6 +46,6 @@ $ snap set modem-manager debug.enable=false
 The debug information, when enabled, will be available in the journal and can
 be viewed with:
 
-```
+```text
 $ journalctl --no-pager -u snap.modem-manager.modemmanager.service
 ```

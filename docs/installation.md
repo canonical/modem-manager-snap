@@ -13,28 +13,22 @@ You can install the snap with the following command:
 
 ```text
 $ snap install modem-manager
-modem-manager 1.6.2-3 from 'canonical' installed
+modem-manager (1.10/stable) 1.10.0-4 from Canonical✓ installed
 ```
-
-Although the modem-manager snap is available from other channels (candidate,
-beta, edge), only the stable version should be used for production devices. The
-meaning of the other channels is internal to the development team of the
-modem-manager snap.
 
 All necessary plugs and slots will be automatically connected within the
 installation process. You can verify this with:
 
 ```text
-$ snap interfaces modem-manager
-Slot                   Plug
-modem-manager:service  modem-manager:mmcli
+$ snap connections modem-manager
+Interface      Plug                           Slot                   Notes
+modem-manager  modem-manager:mmcli            modem-manager:service  -
+modem-manager  network-manager:modem-manager  modem-manager:service  -
 ```
 
 We see here that the _mmcli_ command line utility can use the ModemManager
-service.
-
-**NOTE:** The _network-manager:modem-manager_ plug is connected to the
-_modem-manager:service_ slot when the NetworkManager snap is installed too.
+service and that network-manager can do the same (we will see that if
+the network-manager snap is already installed in the system).
 
 Once the installation has successfully finished the ModemManager service is
 running in the background. You can check its current status with
@@ -43,11 +37,11 @@ running in the background. You can check its current status with
 $ systemctl status snap.modem-manager.modemmanager.service 
 ● snap.modem-manager.modemmanager.service - Service for snap application modem-manager.modemmanager
    Loaded: loaded (/etc/systemd/system/snap.modem-manager.modemmanager.service; enabled; vendor preset: enabled)
-   Active: active (running) since Wed 2017-03-22 10:41:02 UTC; 3min 27s ago
- Main PID: 2518 (modemmanager)
+   Active: active (running) since Fri 2020-07-10 08:34:43 UTC; 2min 20s ago
+ Main PID: 2047 (ModemManager)
+    Tasks: 3 (limit: 569)
    CGroup: /system.slice/snap.modem-manager.modemmanager.service
-           ├─2518 /bin/sh /snap/modem-manager/39/bin/modemmanager
-           └─2525 /snap/modem-manager/39/usr/sbin/ModemManager
+           └─2047 /snap/modem-manager/414/usr/sbin/ModemManager --filter-policy=STRICT --log-level=INFO
 ```
 
 Now you have ModemManager successfully installed. In the next sections we will
@@ -62,6 +56,20 @@ desired.
 
 Finally, note that to run both _mmcli_ and _dbus-send_ we need root permissions, so
 we use _sudo_ with them.
+
+# modem-manager tracks and channels
+
+The modem-manager snap has currently three tracks:
+
+* __20__: Contains upstream version 1.12.8 and has a core20 base. The track name
+refers to the base snap and it is the convention being used at the moment.
+* __1.10__: Contains upstream version 1.10.0 and has a core18
+base. Nowadays, this is the one installed by default if the channel is
+not specified when running `snap install`. The track name refers to the
+upstream version. More modern releases have changed the convention so
+the track now refers to the base snap.
+* __latest__: Contains upstream version 1.8.0 and has a core16 base. Despite
+the unfortunate name (there are historical reasons for that) it is the oldest version.
 
 ## Next Steps
 
