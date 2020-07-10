@@ -6,6 +6,8 @@ table_of_contents: False
 # Report a Bug
 
 Bugs can be reported [here](https://bugs.launchpad.net/snappy-hwe-snaps/+filebug).
+Note that this is only for bugs for the snap, if you are using the debian
+package you should file bugs against the Ubuntu package.
 
 If the bug can be reproduced, [enabling the debug
 output](reference/snap-configuration/debug.md) before doing so is
@@ -21,7 +23,7 @@ And the output of the following command:
 $ sudo modem-manager.mmcli -m <N>
 ```
 
-, being <N> the modem number as reported by
+, being `<N>` the modem number as reported by
 
 ```text
 $ sudo modem-manager.mmcli -L
