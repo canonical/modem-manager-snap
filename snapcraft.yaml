@@ -116,6 +116,7 @@ parts:
       - --enable-gtk-doc=no
       - --with-polkit=no
       - --enable-vala=no
+      - --disable-maintainer-mode
       # Set explicitly CFLAGS until lp: #1791946 is solved
       - CFLAGS=-O2
 
