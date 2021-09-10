@@ -168,7 +168,8 @@ parts:
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
       git am "$SNAPCRAFT_PROJECT_DIR"/patch/*.patch
-      # Build
+      # Build (remove .git so configure considers sets release flag)
+      rm -rf .git
       snapcraftctl build
       # Run all tests ModemManager ships by default
       make check
