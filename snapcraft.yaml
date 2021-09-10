@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.12.8-2-dev
+version: 1.16.6-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -8,7 +8,7 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at
-  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-1.12
+  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-20
 confinement: strict
 grade: stable
 base: core20
@@ -26,10 +26,10 @@ hooks:
 layout:
   /usr/lib/ModemManager:
     symlink: $SNAP/usr/lib/ModemManager
-  /usr/lib/libqmi/qmi-proxy:
-    symlink: $SNAP/usr/lib/libqmi/qmi-proxy
-  /usr/lib/libmbim/mbim-proxy:
-    symlink: $SNAP/usr/lib/libmbim/mbim-proxy
+  /usr/libexec/qmi-proxy:
+    symlink: $SNAP/usr/libexec/qmi-proxy
+  /usr/libexec/mbim-proxy:
+    symlink: $SNAP/usr/libexec/mbim-proxy
 
 apps:
   mmcli:
@@ -106,7 +106,7 @@ parts:
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/ubuntu/focal
+    source-branch: applied/ubuntu/focal-updates
 
     autotools-configure-parameters:
       - --prefix=/usr
@@ -167,7 +167,6 @@ parts:
       git config user.name "snapcraft"
       git am "$SNAPCRAFT_PROJECT_DIR"/patch/*.patch
       # Build
-      ./autogen.sh
       snapcraftctl build
       # Run all tests ModemManager ships by default
       make check
@@ -193,10 +192,12 @@ parts:
         - usr/lib/*/libqmi-glib.so*
         - usr/lib/libqmi/qmi-proxy
         - usr/bin/qmicli
+        - usr/bin/qmi-firmware-update
         - usr/bin/qmi-network
         - usr/share/doc/libqmi-glib5
         - usr/share/doc/libqmi-proxy
         - usr/share/doc/libqmi-utils
+        - usr/libexec/*
 
     prime:
       - $wanted
