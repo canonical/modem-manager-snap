@@ -120,6 +120,7 @@ parts:
       - CFLAGS=-O2
 
     build-packages:
+      - autoconf-archive
       - intltool
       - gtk-doc-tools
       - libdbus-glib-1-dev
@@ -145,8 +146,8 @@ parts:
       - libreadline-dev
       - libnewt-dev
       - dbus-test-runner
-      - python-dbus
-      - python-gi
+      - python3-dbus
+      - python3-gi
       - libqmi-glib-dev
       - libmbim-glib-dev
 
