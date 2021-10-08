@@ -10,7 +10,7 @@ execute: |
     /snap/bin/mmcli -L
 
     # Ensure all necessary plugs/slots are connected
-    snap interfaces | grep -Pzq "modem-manager:service +modem-manager:mmcli"
+    snap connections modem-manager | grep -Ezq "modem-manager:mmcli .*modem-manager:service"
 
     # Make sure the daemon's parent is PID 1
     pgrep -P 1 ModemManager

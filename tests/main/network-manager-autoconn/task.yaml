@@ -9,8 +9,8 @@ execute: |
     snap install --channel=20/beta network-manager
 
     # Ensure all necessary plugs/slots are connected
-    snap interfaces | grep -Ezq "modem-manager:service .*modem-manager:mmcli"
-    snap interfaces | grep -Ezq "modem-manager:service .*network-manager:modem-manager"
+    snap connections modem-manager | grep -Ezq "modem-manager:mmcli .*modem-manager:service"
+    snap connections modem-manager | grep -Ezq "network-manager:modem-manager .*modem-manager:service"
 
     # Set renderer back to networkd
     snap set network-manager defaultrenderer=false
