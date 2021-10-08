@@ -7,6 +7,7 @@ execute: |
     wait_for_modem_manager
 
     snap install --channel=20/stable network-manager
+    sleep 5
 
     # Ensure all necessary plugs/slots are connected
     snap connections modem-manager | grep -Ezq "modem-manager:mmcli .*modem-manager:service"
@@ -14,4 +15,4 @@ execute: |
 
     # Set renderer back to networkd
     snap set network-manager defaultrenderer=false
-    sleep 2
+    sleep 5
