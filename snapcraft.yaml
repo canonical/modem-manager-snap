@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.16.6-2
+version: 1.16.6-3-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
