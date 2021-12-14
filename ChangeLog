@@ -1,3 +1,24 @@
+2021-12-14 modem-manager 1.16.6-2
+
+  [ Changes in primed packages ]
+  
+  libqmi-glib5, libqmi-proxy, libqmi-utils (built from libqmi) updated from 1.28.6-1~20.04 to 1.28.6-1~20.04.1:
+  
+    libqmi (1.28.6-1~20.04.1) focal; urgency=medium
+  
+      * Apply upstream patch to display the 5G NSA status. (lp: #1946143)
+  
+     -- Jerry Lee <jerry.lee@canonical.com>  Tue, 05 Oct 2021 20:39:37 +0800
+  
+  libmm-glib0, modemmanager (built from modemmanager) updated from 1.16.6-2~20.04 to 1.16.6-2~20.04.1:
+  
+    modemmanager (1.16.6-2~20.04.1) focal; urgency=medium
+  
+      * Support manual firmware upgrading for Foxconn and Quectel modems.
+        (LP: #1946096)
+  
+     -- Jerry Lee <jerry.lee@canonical.com>  Thu, 21 Oct 2021 10:29:18 +0800
+  
 2021-10-08 modem-manager 1.16.6-1
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
