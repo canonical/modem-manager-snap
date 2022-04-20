@@ -193,7 +193,6 @@ parts:
         - usr/share/doc/libmbim-proxy
         - usr/share/doc/libmbim-utils
         - usr/lib/*/libqmi-glib.so*
-        - usr/lib/libqmi/qmi-proxy
         - usr/bin/qmicli
         - usr/bin/qmi-firmware-update
         - usr/bin/qmi-network
