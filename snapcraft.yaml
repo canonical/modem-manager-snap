@@ -187,7 +187,6 @@ parts:
         - usr/lib/libmm-glib.so*
         - usr/share/doc/libgudev-1.0-0
         - usr/lib/*/libmbim-glib.so*
-        - usr/lib/libmbim/mbim-proxy
         - usr/bin/mbimcli
         - usr/bin/mbim-network
         - usr/share/doc/libmbim-glib4
