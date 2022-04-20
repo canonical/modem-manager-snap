@@ -10,7 +10,7 @@ description: |
   Please find the source code at
   https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-22
 confinement: strict
-grade: stable
+grade: devel
 base: core22
 
 slots:
