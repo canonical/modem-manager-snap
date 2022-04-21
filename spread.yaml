@@ -31,7 +31,7 @@ backends:
         memory: 4G
         systems:
             - ubuntu-core-22:
-                bios: uefi
+                bios: /usr/share/OVMF/OVMF_CODE.fd
                 username: test
                 password: test
 
