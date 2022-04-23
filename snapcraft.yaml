@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.16.6-3-dev
+version: 1.18.6-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -8,10 +8,10 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at
-  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-20
+  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-22
 confinement: strict
-grade: stable
-base: core20
+grade: devel
+base: core22
 
 slots:
   service: modem-manager
@@ -106,7 +106,7 @@ parts:
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/ubuntu/focal-updates
+    source-branch: applied/ubuntu/jammy
 
     autotools-configure-parameters:
       - --prefix=/usr
@@ -187,14 +187,12 @@ parts:
         - usr/lib/libmm-glib.so*
         - usr/share/doc/libgudev-1.0-0
         - usr/lib/*/libmbim-glib.so*
-        - usr/lib/libmbim/mbim-proxy
         - usr/bin/mbimcli
         - usr/bin/mbim-network
         - usr/share/doc/libmbim-glib4
         - usr/share/doc/libmbim-proxy
         - usr/share/doc/libmbim-utils
         - usr/lib/*/libqmi-glib.so*
-        - usr/lib/libqmi/qmi-proxy
         - usr/bin/qmicli
         - usr/bin/qmi-firmware-update
         - usr/bin/qmi-network
