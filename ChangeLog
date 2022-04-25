@@ -1,3 +1,193 @@
+2022-04-25 modem-manager 1.18.6-1
+
+  [ Philip Meulengracht <the_meulengracht@hotmail.com> ]
+  * None
+    Merge-Proposal: https://code.launchpad.net/~the-meulengracht/snappy-hwe-snaps/+git/modem-manager/+merge/419923
+
+  [ Changes in primed packages ]
+  
+  libgudev-1.0-0 (built from libgudev) updated from 1:233-1 to 1:237-2build1:
+  
+  libmbim-glib4, libmbim-proxy, libmbim-utils (built from libmbim) updated from 1.24.8-1~20.04 to 1.26.2-1build1:
+  
+    libmbim (1.26.2-1build1) jammy; urgency=high
+  
+      * No change rebuild for ppc64el baseline bump.
+  
+     -- Julian Andres Klode <juliank@ubuntu.com>  Thu, 24 Mar 2022 13:13:20 +0100
+  
+    libmbim (1.26.2-1) unstable; urgency=medium
+  
+      * New upstream version 1.26.2
+      * d/control: avoid duplicate build dependencies and sort list
+        `gtk-doc-tools` was added to `Build-Depends` in order to fix build with
+        latest autotools, but it was pulled in unconditionally and left in
+        `Build-Depends-Indep`. This commit makes sure we avoid duplicates and
+        don't need `gtk-doc-tools` when building with the `nodoc` profile.
+        We also took the opportunity to sort build dependencies by alphabetical
+        order for better readability.
+      * d/libmbim-glib4: update symbols file for new version
+      * debian: update lintian-overrides.
+        Due to a change in how `lintian` reports issues, the `libmbim-glib4`
+        overrides were ignored. This commit updates the corresponding file in
+        order to fix that and adds a new override for `libmbim-glib-doc`:
+        installing documentation to `/usr/share/gtk-doc` instead of
+        `/usr/share/doc` is the standard practice for glib/gtk-based software.
+      * d/rules: drop --fail-missing option for dh_missing.
+        This is now the default with dh-compat level 13.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@collabora.com>  Tue, 07 Dec 2021 13:47:25 +0100
+  
+    libmbim (1.26.0-2) unstable; urgency=medium
+  
+      * d/control: build-depend on gtk-doc-tools.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@collabora.com>  Mon, 06 Dec 2021 17:24:36 +0100
+  
+    libmbim (1.26.0-1) unstable; urgency=medium
+  
+      * New upstream version 1.26.0
+      * d/control: change maintainer to DebianOnMobile team.
+      * d/control: bump debhelper-compat version and Standards-Version.
+      * d/copyright: add Upstream-Contact and update maintainer email
+      * d/copyright: fix libmbim-glib path
+      * debian: add salsa CI pipeline
+      * d/source: add upstream metadata
+      * d/control: update build dependencies.
+      * d/libmbim-glib4: update symbols file for new version
+      * d/watch: bump watch file version, no change required
+      * d/rules: add hardening build options
+      * d/changelog: prepare new release
+      * d/control: add more Uploaders.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@collabora.com>  Thu, 04 Nov 2021 17:16:51 +0100
+  
+    libmbim (1.24.8-1) experimental; urgency=medium
+  
+      * New upstream version
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 22 Jun 2021 12:18:09 +0200
+  
+  libqmi-glib5, libqmi-proxy, libqmi-utils (built from libqmi) updated from 1.28.6-1~20.04.1 to 1.30.4-1:
+  
+    libqmi (1.30.4-1) unstable; urgency=medium
+  
+      * New upstream version 1.30.4
+      * d/rules: error out if symbols aren't up-to-date.
+        We want to ship shared libs with up-to-date symbols file, so having the
+        build error out if that's not the case is a good way to ensure we update
+        those before releasing the package.
+      * d/control: sort build dependencies.
+      * lintian-overrides: update to new format for libqmi-glib5.
+        The format for the `symbols-declares-dependency-on-other-package`
+        lintian override has changed to include the corresponding library name.
+        Update the override so it matches the current format and makes lintian
+        happy.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Wed, 16 Feb 2022 15:20:43 +0100
+  
+    libqmi (1.30.2-1) unstable; urgency=medium
+  
+      * New upstream version 1.30.2
+      * d/control: change maintainer to DebianOnMobile team.
+      * d/control: bump debhelper-compat version and Standards-Version.
+      * d/copyright: add Upstream-Contact field
+      * debian: add salsa CI pipeline
+      * d/source: add upstream metadata
+      * d/watch: bump watch file version, no change required
+      * d/control: update build dependencies.
+      * d/rules: add hardening build options
+      * d/libqmi-glib5: update symbols file for new version
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Tue, 12 Oct 2021 16:17:09 +0200
+  
+    libqmi (1.28.6-1) experimental; urgency=medium
+  
+      * New upstream version
+      * debian/libqmi-glib5.symbols:
+        - updated for the new version
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 22 Jun 2021 13:38:23 +0200
+  
+  libmm-glib0, modemmanager (built from modemmanager) updated from 1.16.6-2~20.04.1 to 1.18.6-1:
+  
+    modemmanager (1.18.6-1) unstable; urgency=medium
+  
+      [ Bjørn Bürger ]
+      * Add README.Debian.
+         * Added upgrade notice regarding changed fcc-unlock.d defaults:
+           https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1004447
+  
+      [ Guido Günther ]
+      * Mention FCC unlock in NEWS.Debian
+  
+      [ Arnaud Ferraris ]
+      * New upstream version 1.18.6
+      * d/libmm-glib0: update symbols file for new version.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Wed, 16 Feb 2022 17:00:52 +0100
+  
+    modemmanager (1.18.4-1) unstable; urgency=medium
+  
+      [ Cyril Brulebois ]
+      * Fix missing dependency on policykit-1 (Closes: #991223).
+        Without it, a lot of operations would result in the following error at
+        the D-Bus level:
+            The name org.freedesktop.PolicyKit1 was not provided by any .service files
+        In bullseye, ModemManager.service wouldn't even start, because of the
+        missing polkit.service dependency at the systemd level.
+  
+      [ Arnaud Ferraris ]
+      * New upstream version 1.18.4
+      * d/copyright: fix wrong path for libqcdm
+        `libqcdm` was previously `libwmc`, but the corresponding copyright entry
+        wasn't updated when the folder was renamed.
+      * d/control: update packages descriptions.
+        As it was pointed out, ModemManager now supports 5G modems, make sure
+        the packages descriptions reflect that.
+      * debian: address lintian issues.
+        This commit addresses multiple issues reported by lintian:
+        - doc installed into `/usr/share/gtk-doc` instead of `/usr/share/doc`,
+          which is normal behavior for glib-based software
+        - missing `Build-Depends-Package` in `libmm-glib0` symbols file
+        - ModemManager plugins not including dependency information
+        - system-wide `fcc-unlock.d` folder installed even though we don't ship
+          any distro-specific configuration which would be included there
+      * d/modemmanager.prerm: don't call systemctl directly.
+        Debian provides a helper tool for avoiding direct calls to systemctl in
+        maintainer scripts, so let's use it.
+      * d/control: sort build dependencies.
+        Also avoid installing unnecessary dependencies when using the `nodoc`
+        build profile.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Tue, 14 Dec 2021 10:09:29 +0100
+  
+    modemmanager (1.18.2-1) unstable; urgency=medium
+  
+      [ Henry-Nicolas Tourneur ]
+      * d/rules: set with-polkit to permissive (Closes: #800598)
+  
+      [ Arnaud Ferraris ]
+      * New upstream version 1.18.2 (Closes: #1000450)
+      * d/control: change maintainer to DebianOnMobile team (Closes: #949129)
+      * d/control: bump debhelper-compat version and Standards-Version.
+      * d/copyright: add Upstream-Contact and update maintainer email
+      * d/gbp.conf: fix debian branch name
+      * debian: add salsa CI pipeline
+      * d/source: add upstream metadata
+      * d/control: update build dependencies.
+      * d/watch: bump watch file version, no change required
+      * d/libmm-glib0: update symbols file for new version
+      * d/rules: add hardening build options
+  
+     -- Arnaud Ferraris <arnaud.ferraris@collabora.com>  Mon, 06 Dec 2021 17:46:45 +0100
+  
+    modemmanager (1.16.6-2) experimental; urgency=medium
+  
+      * debian/control: include python build-depends for tests
+  
+     -- Sebastien Bacher <seb128@debian.org>  Fri, 25 Jun 2021 15:32:16 +0200
+  
 2021-12-14 modem-manager 1.16.6-2
 
   [ Changes in primed packages ]
