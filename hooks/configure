@@ -24,3 +24,15 @@ if [ -z "$value" ]; then
     snapctl set debug.enable="$value"
 fi
 switch_debug_enable "$value"
+
+value=$(snapctl get test.no-suspend-resume)
+if [ -z "$value" ]; then
+    value="false"
+    snapctl set test.no-suspend-resume="$value"
+fi
+
+value=$(snapctl get test.quick-suspend-resume)
+if [ -z "$value" ]; then
+    value="false"
+    snapctl set test.quick-suspend-resume="$value"
+fi
