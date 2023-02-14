@@ -14,5 +14,18 @@ if [ -f "$SNAP_DATA"/.debug_enabled ]; then
     DEBUG="--debug"
 fi
 
+TEST_NO_SUSPEND_RESUME=""
+if [ "$(snapctl get test.no-suspend-resume)" = "true" ]; then
+	TEST_NO_SUSPEND_RESUME="--test-no-suspend-resume"
+fi
+
+TEST_QUICK_SUSPEND_RESUME=""
+if [ "$(snapctl get test.quick-suspend-resume)" =  "true" ]; then
+	TEST_QUICK_SUSPEND_RESUME="--test-quick-suspend-resume"
+fi
+
 exec "$SNAP"/usr/sbin/ModemManager --filter-policy=STRICT \
-     $DEBUG --log-level="$LOG_LEVEL" "$@"
+     $DEBUG --log-level="$LOG_LEVEL" \
+     $TEST_NO_SUSPEND_RESUME \
+     $TEST_QUICK_SUSPEND_RESUME \
+     "$@"
