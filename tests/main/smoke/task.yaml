@@ -1,9 +1,9 @@
 summary: Smoke test
 
 execute: |
-    . "$SYSTEMSNAPSTESTLIB"/utilities.sh
+  . "$SYSTEMSNAPSTESTLIB"/utilities.sh
 
-    test -e /snap/bin/modem-manager.mmcli
+  test -e /snap/bin/modem-manager.mmcli
 
-    wait_for_systemd_service snap.modem-manager.modemmanager
-    sudo modem-manager.mmcli -L
+  wait_for_systemd_service snap.modem-manager.modemmanager
+  sudo modem-manager.mmcli -L

@@ -1,18 +1,18 @@
 summary: Test modem-manager snap installation was successful
 
 execute: |
-    . "$SYSTEMSNAPSTESTLIB"/utilities.sh
+  . "$SYSTEMSNAPSTESTLIB"/utilities.sh
 
-    # Service should be up an running
-    wait_for_systemd_service snap.modem-manager.modemmanager
+  # Service should be up an running
+  wait_for_systemd_service snap.modem-manager.modemmanager
 
-    snap install --channel=20/stable network-manager
-    sleep 5
+  snap install --channel=20/stable network-manager
+  sleep 5
 
-    # Ensure all necessary plugs/slots are connected
-    snap connections modem-manager | grep -Ezq "modem-manager:mmcli .*modem-manager:service"
-    snap connections modem-manager | grep -Ezq "network-manager:modem-manager .*modem-manager:service"
+  # Ensure all necessary plugs/slots are connected
+  snap connections modem-manager | grep -Ezq "modem-manager:mmcli .*modem-manager:service"
+  snap connections modem-manager | grep -Ezq "network-manager:modem-manager .*modem-manager:service"
 
-    # Set renderer back to networkd
-    snap set network-manager defaultrenderer=false
-    sleep 5
+  # Set renderer back to networkd
+  snap set network-manager defaultrenderer=false
+  sleep 5
