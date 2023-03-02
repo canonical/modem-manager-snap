@@ -1,7 +1,7 @@
 summary: Test modem-manager snap debug configuration
 
 execute: |
-    . $TESTSLIB/utilities.sh
+    . "$SYSTEMSNAPSTESTLIB"/utilities.sh
 
     test "$(snap get modem-manager debug.enable)" = "false"
 

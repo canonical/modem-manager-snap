@@ -1,10 +1,10 @@
 summary: Test modem-manager snap installation was successful
 
 execute: |
-    . $TESTSLIB/utilities.sh
+    . "$SYSTEMSNAPSTESTLIB"/utilities.sh
 
     # Service should be up an running
-    wait_for_modem_manager
+    wait_for_systemd_service snap.modem-manager.modemmanager
 
     snap install --channel=20/stable network-manager
     sleep 5
