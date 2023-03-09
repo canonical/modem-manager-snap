@@ -1,3 +1,13 @@
+2023-03-09 modem-manager 1.8.0-13
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * docs: update to match current state
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/387198
+
+  [ Changes in primed packages ]
+  
+  No changes for primed packages
+  
 2020-01-21 modem-manager 1.8.0-12
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
