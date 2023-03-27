@@ -1,9 +1,9 @@
 snapcraft-version: '4.8'
-snapcraft-started-at: '2023-03-09T11:20:42.159460Z'
+snapcraft-started-at: '2023-03-27T16:32:57.204015Z'
 snapcraft-os-release-id: ubuntu
 snapcraft-os-release-version-id: '16.04'
 name: modem-manager
-version: 1.8.0-13
+version: 1.8.0-14
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -292,11 +292,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -381,11 +381,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -404,7 +404,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -415,13 +415,13 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     organize:
       ChangeLog: usr/share/doc/modem-manager/ChangeLog
-    override-build: 'cp "/build/ci-modem-manager-pcb95hvjqzrw1rz2"/ChangeLog "$SNAPCRAFT_PART_INSTALL"
+    override-build: 'cp "/build/ci-modem-manager-kb8m9px8yy914yzv"/ChangeLog "$SNAPCRAFT_PART_INSTALL"
 
       '
     plugin: nil
@@ -675,11 +675,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -764,11 +764,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -787,7 +787,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -798,10 +798,10 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     override-build: |
       snapcraftctl build
       # Strip binaries
@@ -835,7 +835,7 @@ parts:
     configflags:
     - --enable-mbim-qmux
     - --libexecdir=/usr/lib/libqmi
-    - CFLAGS=-O2 -I/build/ci-modem-manager-pcb95hvjqzrw1rz2/stage/include
+    - CFLAGS=-O2 -I/build/ci-modem-manager-kb8m9px8yy914yzv/stage/include
     installed-packages:
     - adduser=3.113+nmu3ubuntu4
     - advancecomp=1.20-1ubuntu0.2+esm2
@@ -1068,11 +1068,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -1157,11 +1157,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -1180,7 +1180,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -1191,10 +1191,10 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     override-build: |
       snapcraftctl build
       # Strip binaries
@@ -1261,7 +1261,7 @@ parts:
     - --enable-vala=no
     - --enable-tests=yes
     - CFLAGS=-O2 -I$SNAPCRAFT_PART_INSTALL/usr/include -I$SNAPCRAFT_PART_INSTALL/usr/include/x86_64-linux-gnu
-      -I/build/ci-modem-manager-pcb95hvjqzrw1rz2/stage/include
+      -I/build/ci-modem-manager-kb8m9px8yy914yzv/stage/include
     installed-packages:
     - adduser=3.113+nmu3ubuntu4
     - advancecomp=1.20-1ubuntu0.2+esm2
@@ -1494,11 +1494,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -1583,11 +1583,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -1606,7 +1606,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -1617,10 +1617,10 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     override-build: |
       snapcraftctl build
       # Run all tests ModemManager ships by default
@@ -1881,11 +1881,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -1970,11 +1970,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -1993,7 +1993,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -2004,10 +2004,10 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     organize:
       mmcli: bin/mmcli
       mmcli-internal: bin/mmcli-internal
@@ -2253,11 +2253,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -2342,11 +2342,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -2365,7 +2365,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -2376,10 +2376,10 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     organize:
       copyright: usr/share/doc/modem-manager/copyright
     plugin: dump
@@ -2623,11 +2623,11 @@ parts:
     - libprocps4=2:3.3.10-4ubuntu2.5
     - libproxy1v5=0.4.11-5ubuntu1.2
     - libpython-stdlib=2.7.12-1~16.04
-    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+    - libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
     - libpython3-stdlib=3.5.1-3
-    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm6
+    - libpython3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - libpython3.5-stdlib=3.5.2-2ubuntu0~16.04.13+esm7
     - libreadline-dev=6.3-8ubuntu2
     - libreadline6-dev=6.3-8ubuntu2
     - libreadline6=6.3-8ubuntu2
@@ -2712,11 +2712,11 @@ parts:
     - python-mako=1.0.3+ds1-1ubuntu1+esm1
     - python-markupsafe=0.23-2build2
     - python-minimal=2.7.12-1~16.04
-    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-    - python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+    - python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+    - python2.7=2.7.12-1ubuntu0~16.04.18+esm4
     - python3-minimal=3.5.1-3
-    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm6
-    - python3.5=3.5.2-2ubuntu0~16.04.13+esm6
+    - python3.5-minimal=3.5.2-2ubuntu0~16.04.13+esm7
+    - python3.5=3.5.2-2ubuntu0~16.04.13+esm7
     - python3=3.5.1-3
     - python=2.7.12-1~16.04
     - readline-common=6.3-8ubuntu2
@@ -2735,7 +2735,7 @@ parts:
     - sysv-rc=2.88dsf-59.3ubuntu2
     - sysvinit-utils=2.88dsf-59.3ubuntu2
     - tar=1.28-2.1ubuntu0.2+esm2
-    - tzdata=2022f-0ubuntu0.16.04+esm1
+    - tzdata=2022g-0ubuntu0.16.04+esm1
     - ubuntu-keyring=2012.05.19.1
     - udev=229-4ubuntu21.31+esm3
     - util-linux=2.27.1-6ubuntu3.10+esm2
@@ -2746,10 +2746,10 @@ parts:
     - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
     - zlib1g=1:1.2.8.dfsg-2ubuntu4.3+esm2
     installed-snaps:
-    - core18=2700
-    - core=14788
+    - core18=2719
+    - core=14950
     - snapcraft=6519
-    - snapd=18359
+    - snapd=18601
     organize:
       configure: meta/hooks/configure
     plugin: dump
@@ -2762,7 +2762,7 @@ parts:
 architectures:
 - armhf
 image-info:
-  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-pcb95hvjqzrw1rz2/+build/2045619
+  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-kb8m9px8yy914yzv/+build/2064583
 build-packages:
 - autoconf-archive=20150925-1
 - autoconf=2.69-9
@@ -2871,8 +2871,8 @@ build-packages:
 - libpng12-dev=1.2.54-1ubuntu1.1+esm1
 - libproxy1v5=0.4.11-5ubuntu1.2
 - libpython-stdlib=2.7.12-1~16.04
-- libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-- libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm3
+- libpython2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+- libpython2.7-stdlib=2.7.12-1ubuntu0~16.04.18+esm4
 - libreadline-dev=6.3-8ubuntu2
 - libreadline6-dev=6.3-8ubuntu2
 - libsigsegv2=2.10-4
@@ -2906,8 +2906,8 @@ build-packages:
 - python-mako=1.0.3+ds1-1ubuntu1+esm1
 - python-markupsafe=0.23-2build2
 - python-minimal=2.7.12-1~16.04
-- python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm3
-- python2.7=2.7.12-1ubuntu0~16.04.18+esm3
+- python2.7-minimal=2.7.12-1ubuntu0~16.04.18+esm4
+- python2.7=2.7.12-1ubuntu0~16.04.18+esm4
 - python=2.7.12-1~16.04
 - sgml-base=1.26+nmu4ubuntu1
 - sgml-data=2.0.10
@@ -2917,6 +2917,6 @@ build-packages:
 - xsltproc=1.1.28-2.1ubuntu0.3+esm1
 - zlib1g-dev=1:1.2.8.dfsg-2ubuntu4.3+esm2
 build-snaps:
-- core=14788
+- core=14950
 primed-stage-packages:
 - libgudev-1.0-0=1:230-2
