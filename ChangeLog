@@ -1,3 +1,196 @@
+2023-04-05 modem-manager 1.20.0-1
+
+  [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
+  * Port recipe to snapcraft 7
+    Merge-Proposal: https://code.launchpad.net/~alfonsosanchezbeato/snappy-hwe-snaps/+git/modem-manager/+merge/424725
+
+  [ Robert Liu <(unknown e-mail)> ]
+  * None
+    Merge-Proposal: https://code.launchpad.net/~robertliu/snappy-hwe-snaps/+git/modme-manager/+merge/434059
+
+  [ alfonsosanchezbeato <alfonso.sanchez-beato@canonical.com> ]
+  * Adapt CI/CD to github actions
+    Merge pull request #1 from snapcore/adapt-cicd-22
+
+  [ Changes in primed packages ]
+  
+  libmbim-glib4, libmbim-proxy, libmbim-utils (built from libmbim) updated from 1.26.2-1build1 to 1.28.0-1~ubuntu20.04.1:
+  
+    libmbim (1.28.0-1~ubuntu20.04.1) jammy; urgency=medium
+  
+      * Backport the newer modemmanager stack to the LTS as part of
+        new hardware enablement including FM350 modems
+        (lp: #1950282)
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Dec 2022 13:35:17 +0100
+  
+    libmbim (1.27~git20220823-0ubuntu1) kinetic; urgency=medium
+  
+      * Update to a preversion doing a git snapshot, needed for newer hardware
+      * B-D on meson and bash-completion
+      * Updated the symbols
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 24 Aug 2022 11:52:15 +0200
+  
+    libmbim (1.26.4-1) unstable; urgency=medium
+  
+      * debian: lintian-driven fixes and small improvements.
+        This commit includes minor changes spotted by `lintian-brush`:
+        - `d/copyright`: use `https` for the file format spec URL
+        - `d/upstream/metadata`: append `.git` to repo URL
+        - `d/rules`: drop symbols migration (1.12 is long gone)
+      * New upstream version 1.26.4
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Thu, 19 May 2022 19:21:56 +0200
+  
+  libqmi-glib5, libqmi-proxy, libqmi-utils (built from libqmi) updated from 1.30.4-1 to 1.32.0-1ubuntu0.22.04.1:
+  
+    libqmi (1.32.0-1ubuntu0.22.04.1) jammy; urgency=medium
+  
+      * Backport the newer modemmanager stack to the LTS as part of
+        new hardware enablement including FM350 modems
+        (lp: #1950282)
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 22 Nov 2022 13:17:29 +0100
+  
+    libqmi (1.31~git20220823-0ubuntu2) kinetic; urgency=medium
+  
+      * Build without libqrtr for now, the MIR is blocked since we don't have
+        hardware available to do the required testing of the feature,
+        include some workarounds to fix the build
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 07 Sep 2022 12:19:43 +0200
+  
+    libqmi (1.31~git20220823-0ubuntu1) kinetic; urgency=medium
+  
+      * Update to a preversion doing a git snapshot, needed for newer hardware
+      * Build-Depends on meson, help2man and bash-completion
+      * Update the symbols
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 24 Aug 2022 12:14:20 +0200
+  
+    libqmi (1.30.8-1) unstable; urgency=medium
+  
+      * New upstream version 1.30.8
+      * d/control: update my email address.
+        Also bump Standards-Version, no change required.
+      * debian: update lintian-overrides.
+        Due to recent lintian updates, the overrides for `libqmi-glib-doc` are
+        no longer needed, while the source package need new overrides: HTML
+        files are their own sources, so the `source-is-missing` lintian error is
+        not relevant here.
+        Moreover, the tag format of the `libqmi-glib5` overrides needs to be
+        updated so it can be useful again.
+      * d/libqmi-glib5: update symbols file with new entries
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Mon, 11 Jul 2022 14:31:52 +0200
+  
+    libqmi (1.30.6-1) unstable; urgency=medium
+  
+      * d/control: make -dev package depend on libqrtr-glib
+        `libqmi` is now compiled with QRTR support by linking against
+        `libqrtr-glib`. However, `libqmi-glib-dev` doesn't depend on
+        `libqrtr-glib-dev`, meaning users need to manually add the latter to
+        their build dependencies. Avoid this by adding `libqrtr-glib-dev` as a
+        dependency to `libqmi-glib-dev`.
+      * debian: lintian-driven fixes and small improvements.
+        This commit includes minor changes spotted by `lintian-brush`:
+        - `d/upstream/metadata`: append `.git` to repo URL
+        - `d/rules`: drop symbols migration (1.14 is long gone)
+      * New upstream version 1.30.6
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Thu, 19 May 2022 19:42:31 +0200
+  
+    libqmi (1.30.4-2) unstable; urgency=medium
+  
+      * d/control: build-depend on libqrtr-glib.
+        This enables support of QMI over QRTR, required to support Qualcomm SoCs
+        in ModemManager.
+      * d/libqmi-glib5: update symbols file with new entries.
+        Building libqmi with QRTR support adds a few new symbols to the library,
+        make sure those are present in the symbols file.
+      * d/libqmi-glib-doc: add lintian override.
+        Documentation generated by gtk-doc is installed to `/usr/share/gtk-doc`
+        as expected. Add a corresponding lintian override, otherwise it will
+        complain about docs installed outside `/usr/share/doc`.
+      * d/copyright: use secure URL for copyright format.
+        Also update copyright information for the `debian/` folder.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Tue, 22 Feb 2022 10:26:19 +0100
+  
+  libmm-glib0, modemmanager (built from modemmanager) updated from 1.18.6-1 to 1.20.0-1~ubuntu22.04.1:
+  
+    modemmanager (1.20.0-1~ubuntu22.04.1) jammy; urgency=medium
+  
+      * Backport the newer modemmanager stack to the LTS as part of
+        new hardware enablement including FM350 modems
+        (lp: #1950282)
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Dec 2022 13:38:07 +0100
+  
+    modemmanager (1.19~git20220905-0ubuntu2) kinetic; urgency=medium
+  
+      * Build without libqrtr for now, the MIR is blocked since we don't have
+        hardware available to do the required testing of the feature,
+        include some workarounds to fix the build
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 07 Sep 2022 15:38:20 +0200
+  
+    modemmanager (1.19~git20220905-0ubuntu1) kinetic; urgency=medium
+  
+      * New upstream snapshot, fixing build issues with the new glib serie
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 05 Sep 2022 11:26:53 +0200
+  
+    modemmanager (1.19~git20220825-0ubuntu1) kinetic; urgency=medium
+  
+      * Update to a preversion doing a git snapshot, needed for newer hardware
+      * Update the build requirements and build with meson
+      * Refresh the symbols
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 25 Aug 2022 17:28:49 +0200
+  
+    modemmanager (1.18.10-1) unstable; urgency=medium
+  
+      * New upstream version 1.18.10
+      * d/control: update my email address and bump libqmi dependency.
+        Upstream bumped the required version of `libqmi`, so let's ensure this
+        is reflected in this package.
+        This commit also bumps the Standards-Version, as no additional change is
+        required.
+      * debian: update linitian-overrides.
+        Due to recent changes in `lintian`, our overrides for the -doc packages
+        are no longer needed. However, a new `source-is-missing` lintian error
+        message must be overridden as it relates to HTML files, which are source
+        files themselves.
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Mon, 11 Jul 2022 17:30:09 +0200
+  
+    modemmanager (1.18.8-1) unstable; urgency=medium
+  
+      * debian: lintian-driven fixes and small improvements.
+        This commit includes minor changes spotted by `lintian-brush`:
+        - remove obsolete/empty maintainer scripts
+        - `d/upstream/metadata`: append `.git` to repo URL
+        - `d/rules`: drop symbols migration (1.4.14 is long gone)
+      * d/control: drop build dependency on libqrtr-glib
+        `libqrtr-glib-dev` is now a dependency to `libqmi-glib-dev`, and as such
+        can be safely omitted from this package's build deps.
+        We must however increase the required `libqmi` version to ensure we
+        avoid build failures.
+      * New upstream version 1.18.8
+      * d/symbols: update for new release.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Fri, 20 May 2022 10:19:43 +0200
+  
+    modemmanager (1.18.6-2) unstable; urgency=medium
+  
+      * d/control: build-depend on libqrtr-glib.
+        This enables support for the QRTR protocol so we can use the integrated
+        modem found on Qualcomm SoCs.
+  
+     -- Arnaud Ferraris <arnaud.ferraris@gmail.com>  Wed, 23 Feb 2022 13:58:35 +0100
+  
 2022-05-02 modem-manager 1.18.6-2
 
   [ Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com> ]
