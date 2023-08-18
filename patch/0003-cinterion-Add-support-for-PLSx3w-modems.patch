@@ -1,0 +1,36 @@
+From 54c6ef414faa011d16e60918694b4d3453925863 Mon Sep 17 00:00:00 2001
+From: "Theodore A. Roth" <theodore_roth@trimble.com>
+Date: Wed, 18 Aug 2021 06:30:27 -0600
+Subject: [PATCH] cinterion: Add support for PLSx3w modems
+
+Signed-off-by: Theodore A. Roth <theodore_roth@trimble.com>
+---
+ plugins/cinterion/mm-broadband-bearer-cinterion.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/plugins/cinterion/mm-broadband-bearer-cinterion.c b/plugins/cinterion/mm-broadband-bearer-cinterion.c
+index dcc79a9..2802a75 100644
+--- a/plugins/cinterion/mm-broadband-bearer-cinterion.c
++++ b/plugins/cinterion/mm-broadband-bearer-cinterion.c
+@@ -44,6 +44,7 @@ typedef struct {
+  * The expected USB interface mapping is:
+  *   INTERFACE=usb0 -> ID_USB_INTERFACE_NUM=0a
+  *   INTERFACE=usb1 -> ID_USB_INTERFACE_NUM=0c
++ *   INTERFACE=usb0 -> ID_USB_INTERFACE_NUM=08  (PLSx3w)
+  */
+ static const UsbInterfaceConfig usb_interface_configs[] = {
+     {
+@@ -54,6 +55,10 @@ static const UsbInterfaceConfig usb_interface_configs[] = {
+         .swwan_index   = 2,
+         .usb_iface_num = 0x0c,
+     },
++    {
++        .swwan_index   = 1,
++        .usb_iface_num = 0x08,
++    },
+ };
+ 
+ static gint
+-- 
+2.34.1
+
