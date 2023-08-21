@@ -1,3 +1,17 @@
+2023-08-21 modem-manager 1.18.6-3
+
+  [ alfonsosanchezbeato <alfonso.sanchez-beato@canonical.com> ]
+  * patch: cinterion: use port type hints on modem probe
+    Merge pull request #4 from snapcore/core20-pls63
+  * snapcraft.yaml: enable security related flags
+    Merge pull request #5 from snapcore/cleanups-20
+  * patch: backport support for PLSx3w modems
+    Merge pull request #7 from snapcore/add-support-for-PLSx3w
+
+  [ Changes in primed packages ]
+  
+  No changes for primed packages
+  
 2023-04-12 modem-manager 1.18.6-2
 
   [ Robert Liu <(unknown e-mail)> ]
