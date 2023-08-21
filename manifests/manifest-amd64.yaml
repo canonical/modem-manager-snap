@@ -1,9 +1,9 @@
-snapcraft-version: 7.3.1
-snapcraft-started-at: '2023-04-05T16:37:47.838162Z'
+snapcraft-version: 7.5.2
+snapcraft-started-at: '2023-08-21T08:32:39.886427Z'
 snapcraft-os-release-id: ubuntu
 snapcraft-os-release-version-id: '22.04'
 name: modem-manager
-version: 1.20.0-1
+version: 1.20.0-2
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -65,7 +65,7 @@ parts:
     build-packages: []
   changelog:
     plugin: nil
-    override-build: 'cp "/build/ci-modem-manager-ltno7wqopfw5onty"/ChangeLog "$CRAFT_PART_INSTALL"
+    override-build: 'cp "/build/ci-modem-manager-rrr7aamv3xld9o1p"/ChangeLog "$CRAFT_PART_INSTALL"
 
       '
     organize:
@@ -85,11 +85,11 @@ parts:
     - libgudev-1.0-0=1:237-2build1
     - libmbim-glib4=1.28.0-1~ubuntu20.04.1
     - libmbim-proxy=1.28.0-1~ubuntu20.04.1
-    - libmm-glib0=1.20.0-1~ubuntu22.04.1
+    - libmm-glib0=1.20.0-1~ubuntu22.04.2
     - libpolkit-agent-1-0=0.105-33
     - libqmi-glib5=1.32.0-1ubuntu0.22.04.1
     - libqmi-proxy=1.32.0-1ubuntu0.22.04.1
-    - modemmanager=1.20.0-1~ubuntu22.04.1
+    - modemmanager=1.20.0-1~ubuntu22.04.2
     - pkexec=0.105-33
     - policykit-1=0.105-33
     - polkitd=0.105-33
@@ -122,7 +122,7 @@ parts:
     - --with-polkit=no
     - --enable-vala=no
     - --disable-maintainer-mode
-    - CFLAGS=-O2
+    - CFLAGS='-O2 -Wl,-z,relro,-z,now -pie -fpie'
     build-packages:
     - autoconf-archive
     - intltool
@@ -164,11 +164,11 @@ parts:
     - libqmi-utils=1.32.0-1ubuntu0.22.04.1
     override-build: |
       set -ex
-      "/build/ci-modem-manager-ltno7wqopfw5onty/stage"/build-tools/check-versions modemmanager
+      "/build/ci-modem-manager-rrr7aamv3xld9o1p/stage"/build-tools/check-versions modemmanager
       # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am "/build/ci-modem-manager-ltno7wqopfw5onty"/patch/*.patch
+      git am "/build/ci-modem-manager-rrr7aamv3xld9o1p"/patch/*.patch
       # Build (rename .git so configure sets release flag)
       mv .git git
       craftctl default
@@ -177,7 +177,7 @@ parts:
       mv git .git
       # Strip binaries
       find "$CRAFT_PART_INSTALL"/ -executable -type f | xargs file -Ni |
-          grep 'application/x-executable\|application/x-sharedlib' | cut -d: -f1 | xargs strip
+          grep 'application/x-.*executable\|application/x-.*sharedlib' | cut -d: -f1 | xargs strip
     prime:
     - usr/bin/mmcli
     - usr/sbin/ModemManager
@@ -203,7 +203,7 @@ parts:
 architectures:
 - amd64
 image-info:
-  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-ltno7wqopfw5onty/+build/2072755
+  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-rrr7aamv3xld9o1p/+build/2206710
 build-packages: []
 build-snaps: []
 primed-stage-packages:
@@ -211,8 +211,8 @@ primed-stage-packages:
 - libmbim-glib4=1.28.0-1~ubuntu20.04.1
 - libmbim-proxy=1.28.0-1~ubuntu20.04.1
 - libmbim-utils=1.28.0-1~ubuntu20.04.1
-- libmm-glib0=1.20.0-1~ubuntu22.04.1
+- libmm-glib0=1.20.0-1~ubuntu22.04.2
 - libqmi-glib5=1.32.0-1ubuntu0.22.04.1
 - libqmi-proxy=1.32.0-1ubuntu0.22.04.1
 - libqmi-utils=1.32.0-1ubuntu0.22.04.1
-- modemmanager=1.20.0-1~ubuntu22.04.1
+- modemmanager=1.20.0-1~ubuntu22.04.2
