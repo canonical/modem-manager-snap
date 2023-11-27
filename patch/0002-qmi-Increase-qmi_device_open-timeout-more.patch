@@ -1,0 +1,27 @@
+From 1b14d51e4a681ac012e190a5eb55ab26098b59a3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alfonso=20S=C3=A1nchez-Beato?=
+ <alfonso.sanchez-beato@canonical.com>
+Date: Mon, 27 Nov 2023 17:53:47 +0000
+Subject: [PATCH] qmi: Increase qmi_device_open timeout more
+
+See b7f0f2ca, which maybe was not enough. Fixes LP:#2040935.
+---
+ src/mm-port-qmi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/mm-port-qmi.c b/src/mm-port-qmi.c
+index b4001c9..ab4cec5 100644
+--- a/src/mm-port-qmi.c
++++ b/src/mm-port-qmi.c
+@@ -2431,7 +2431,7 @@ port_open_step (GTask *task)
+             mm_obj_dbg (self, "Opening device with flags: %s...", open_flags_str);
+             qmi_device_open (ctx->device,
+                              open_flags,
+-                             45,
++                             120,
+                              g_task_get_cancellable (task),
+                              (GAsyncReadyCallback) qmi_device_open_first_ready,
+                              task);
+-- 
+2.34.1
+
