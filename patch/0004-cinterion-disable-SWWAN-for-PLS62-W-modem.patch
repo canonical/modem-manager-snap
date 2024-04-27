@@ -1,0 +1,55 @@
+From 48e08510c15970dc4c9638000f2bc2e6d586891c Mon Sep 17 00:00:00 2001
+From: Aristo Chen <aristo.chen@canonical.com>
+Date: Thu, 30 May 2024 06:17:38 +0000
+Subject: [PATCH 1/1] cinterion: disable SWWAN for PLS62-W modem
+
+The PLS62-W does not really support SWWAN even though the AT
+command responds to queries.
+
+Signed-off-by: Aristo Chen <aristo.chen@canonical.com>
+---
+ .../cinterion/mm-broadband-modem-cinterion.c    | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/plugins/cinterion/mm-broadband-modem-cinterion.c b/plugins/cinterion/mm-broadband-modem-cinterion.c
+index 575ab48..ea6eeb9 100644
+--- a/plugins/cinterion/mm-broadband-modem-cinterion.c
++++ b/plugins/cinterion/mm-broadband-modem-cinterion.c
+@@ -2811,10 +2811,15 @@ cinterion_modem_create_bearer (MMIfaceModem        *_self,
+ {
+     MMBroadbandModemCinterion *self = MM_BROADBAND_MODEM_CINTERION (_self);
+     GTask                     *task;
++    guint                     vendor_id;
++    guint                     product_id;
+ 
+     task = g_task_new (self, NULL, callback, user_data);
+     g_task_set_task_data (task, g_object_ref (properties), g_object_unref);
+ 
++    vendor_id = mm_base_modem_get_vendor_id (MM_BASE_MODEM (_self));
++    product_id = mm_base_modem_get_product_id (MM_BASE_MODEM (_self));
++
+     /* Newer Cinterion modems may support SWWAN, which is the same as WWAN.
+      * Check to see if current modem supports it.*/
+     if (self->priv->swwan_support != FEATURE_SUPPORT_UNKNOWN) {
+@@ -2831,6 +2836,18 @@ cinterion_modem_create_bearer (MMIfaceModem        *_self,
+         return;
+     }
+ 
++    if (vendor_id == 0x1e2d && product_id == 0x005b) {
++        /* It has been detected that the PLS62-W returns a not-supported
++        *  error for AT^SWWAN (+CME ERROR: 4) even though AT^SWWAN=? returns
++        *  '^SWWAN: (0,1), (1-11), (1,2)', which is apparently good. So we disable
++        *  SWWAN for the moment until support can be detected in a better way.
++        */
++        mm_obj_dbg (self, "SWWAN unsupported for PLS62-W modem");
++        self->priv->swwan_support = FEATURE_NOT_SUPPORTED;
++        common_create_bearer (task);
++        return;
++    }
++
+     mm_obj_dbg (self, "checking ^SWWAN support...");
+     mm_base_modem_at_command (MM_BASE_MODEM (self),
+                               "^SWWAN=?",
+-- 
+2.25.1
+
