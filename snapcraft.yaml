@@ -170,8 +170,6 @@ parts:
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
       git am "$CRAFT_PROJECT_DIR"/patch/*.patch
-      # Build (rename .git so configure sets release flag)
-      mv .git git
       cd "$CRAFT_PART_BUILD"
       craftctl default
       # Run all tests ModemManager ships by default
