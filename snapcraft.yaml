@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.23.4-0ubuntu2
+version: 1.23.4-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -8,7 +8,7 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at
-  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-24
+  https://github.com/snapcore/modem-manager-snap/tree/snap-24
 confinement: strict
 grade: stable
 base: core24
@@ -113,6 +113,7 @@ parts:
       - --libdir=/usr/lib
       - --libexecdir=/usr/lib/ModemManager
       - --sysconfdir=/etc
+      - -Db_pie=true
       - -Dgtk_doc=false
       - -Dpolkit=no
       - -Dvapi=false
