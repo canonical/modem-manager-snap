@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.20.0-3-dev
+version: 1.23.4-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -8,10 +8,10 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at
-  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-22
+  https://github.com/snapcore/modem-manager-snap/tree/snap-24
 confinement: strict
 grade: stable
-base: core22
+base: core24
 
 slots:
   service: modem-manager
@@ -101,27 +101,28 @@ parts:
       - usr/share/doc/libmm-glib0
 
   modemmanager:
-    plugin: autotools
+    plugin: meson
     after: [ stack-snaps-tools ]
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/ubuntu/jammy-updates
+    source-branch: applied/ubuntu/noble
 
-    autotools-configure-parameters:
+    meson-parameters:
       - --prefix=/usr
       - --libdir=/usr/lib
       - --libexecdir=/usr/lib/ModemManager
       - --sysconfdir=/etc
-      - --enable-gtk-doc=no
-      - --with-polkit=no
-      - --enable-vala=no
-      - --disable-maintainer-mode
-      # Set explicitly CFLAGS until lp: #1791946 is solved
-      - CFLAGS='-O2 -Wl,-z,relro,-z,now -pie -fpie'
+      - -Db_pie=true
+      - -Dgtk_doc=false
+      - -Dpolkit=no
+      - -Dvapi=false
+    
+    build-environment:
+      - CFLAGS: "-O2 -Wl,-z,relro,-z,now"
 
     build-packages:
-      - autoconf-archive
+      - meson
       - intltool
       - gtk-doc-tools
       - libdbus-glib-1-dev
@@ -160,20 +161,20 @@ parts:
       - libmbim-proxy
       - libmbim-utils
       - libgudev-1.0-0
+      - libqrtr-glib0
 
     override-build: |
       set -ex
+      cd "$CRAFT_PART_SRC"
       "$CRAFT_STAGE"/build-tools/check-versions modemmanager
       # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
       git am "$CRAFT_PROJECT_DIR"/patch/*.patch
-      # Build (rename .git so configure sets release flag)
-      mv .git git
+      cd "$CRAFT_PART_BUILD"
       craftctl default
       # Run all tests ModemManager ships by default
-      make check
-      mv git .git
+      ninja test
       # Strip binaries
       find "$CRAFT_PART_INSTALL"/ -executable -type f | xargs file -Ni |
           grep 'application/x-.*executable\|application/x-.*sharedlib' | cut -d: -f1 | xargs strip
@@ -186,6 +187,7 @@ parts:
       - usr/lib/libmm-glib.so*
       - usr/share/doc/libgudev-1.0-0
       - usr/lib/*/libmbim-glib.so*
+      - usr/lib/*/libqrtr-glib.so*
       - usr/bin/mbimcli
       - usr/bin/mbim-network
       - usr/share/doc/libmbim-glib4
