@@ -1,9 +1,9 @@
 snapcraft-version: 8.2.11
-snapcraft-started-at: '2024-06-18T07:00:50.566287Z'
+snapcraft-started-at: '2024-06-18T13:26:28.109089Z'
 snapcraft-os-release-id: ubuntu
 snapcraft-os-release-version-id: '24.04'
 name: modem-manager
-version: 1.23.4-1
+version: 1.23.4-2
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -65,7 +65,7 @@ parts:
     build-packages: []
   changelog:
     plugin: nil
-    override-build: 'cp "/build/ci-modem-manager-bvjo2e3olsqei022"/ChangeLog "$CRAFT_PART_INSTALL"
+    override-build: 'cp "/build/ci-modem-manager-mr9x3cz7i0tk618m"/ChangeLog "$CRAFT_PART_INSTALL"
 
       '
     organize:
@@ -164,11 +164,11 @@ parts:
     override-build: |
       set -ex
       cd "$CRAFT_PART_SRC"
-      "/build/ci-modem-manager-bvjo2e3olsqei022/stage"/build-tools/check-versions modemmanager
+      "/build/ci-modem-manager-mr9x3cz7i0tk618m/stage"/build-tools/check-versions modemmanager
       # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am "/build/ci-modem-manager-bvjo2e3olsqei022"/patch/*.patch
+      git am "/build/ci-modem-manager-mr9x3cz7i0tk618m"/patch/*.patch
       cd "$CRAFT_PART_BUILD"
       craftctl default
       # Run all tests ModemManager ships by default
@@ -202,7 +202,7 @@ parts:
 architectures:
 - armhf
 image-info:
-  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-bvjo2e3olsqei022/+build/2516835
+  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-mr9x3cz7i0tk618m/+build/2517250
 build-packages: []
 build-snaps: []
 primed-stage-packages:
