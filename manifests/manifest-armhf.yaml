@@ -1,9 +1,9 @@
-snapcraft-version: 7.5.2
-snapcraft-started-at: '2023-08-21T08:37:14.780044Z'
+snapcraft-version: 8.2.11
+snapcraft-started-at: '2024-06-18T07:00:50.566287Z'
 snapcraft-os-release-id: ubuntu
-snapcraft-os-release-version-id: '22.04'
+snapcraft-os-release-version-id: '24.04'
 name: modem-manager
-version: 1.20.0-2
+version: 1.23.4-1
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -12,8 +12,8 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at
-  https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/modem-manager/+ref/snap-22
-base: core22
+  https://github.com/snapcore/modem-manager-snap/tree/snap-24
+base: core24
 grade: stable
 confinement: strict
 apps:
@@ -65,7 +65,7 @@ parts:
     build-packages: []
   changelog:
     plugin: nil
-    override-build: 'cp "/build/ci-modem-manager-rrr7aamv3xld9o1p"/ChangeLog "$CRAFT_PART_INSTALL"
+    override-build: 'cp "/build/ci-modem-manager-bvjo2e3olsqei022"/ChangeLog "$CRAFT_PART_INSTALL"
 
       '
     organize:
@@ -82,17 +82,14 @@ parts:
     - dpkg-dev
     - git
     stage-packages:
-    - libgudev-1.0-0=1:237-2build1
-    - libmbim-glib4=1.28.0-1~ubuntu20.04.1
-    - libmbim-proxy=1.28.0-1~ubuntu20.04.1
-    - libmm-glib0=1.20.0-1~ubuntu22.04.2
-    - libpolkit-agent-1-0=0.105-33
-    - libqmi-glib5=1.32.0-1ubuntu0.22.04.1
-    - libqmi-proxy=1.32.0-1ubuntu0.22.04.1
-    - modemmanager=1.20.0-1~ubuntu22.04.2
-    - pkexec=0.105-33
-    - policykit-1=0.105-33
-    - polkitd=0.105-33
+    - libgudev-1.0-0=1:238-5ubuntu1
+    - libmbim-glib4=1.31.2-0ubuntu3
+    - libmbim-proxy=1.31.2-0ubuntu3
+    - libmm-glib0=1.23.4-0ubuntu2
+    - libqmi-glib5=1.35.2-0ubuntu2
+    - libqmi-proxy=1.35.2-0ubuntu2
+    - libqrtr-glib0=1.2.2-1ubuntu4
+    - modemmanager=1.23.4-0ubuntu2
     override-build: |
       set -ex
       find "$CRAFT_PART_INSTALL"/ -type f,l \
@@ -107,24 +104,25 @@ parts:
     - usr/share/doc/libmm-glib0
     stage: []
   modemmanager:
-    plugin: autotools
+    plugin: meson
     after:
     - stack-snaps-tools
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/ubuntu/jammy-updates
-    autotools-configure-parameters:
+    source-branch: applied/ubuntu/noble
+    meson-parameters:
     - --prefix=/usr
     - --libdir=/usr/lib
     - --libexecdir=/usr/lib/ModemManager
     - --sysconfdir=/etc
-    - --enable-gtk-doc=no
-    - --with-polkit=no
-    - --enable-vala=no
-    - --disable-maintainer-mode
-    - CFLAGS='-O2 -Wl,-z,relro,-z,now -pie -fpie'
+    - -Db_pie=true
+    - -Dgtk_doc=false
+    - -Dpolkit=no
+    - -Dvapi=false
+    build-environment:
+    - CFLAGS: -O2 -Wl,-z,relro,-z,now
     build-packages:
-    - autoconf-archive
+    - meson
     - intltool
     - gtk-doc-tools
     - libdbus-glib-1-dev
@@ -155,26 +153,26 @@ parts:
     - libqmi-glib-dev
     - libmbim-glib-dev
     stage-packages:
-    - libgudev-1.0-0=1:237-2build1
-    - libmbim-glib4=1.28.0-1~ubuntu20.04.1
-    - libmbim-proxy=1.28.0-1~ubuntu20.04.1
-    - libmbim-utils=1.28.0-1~ubuntu20.04.1
-    - libqmi-glib5=1.32.0-1ubuntu0.22.04.1
-    - libqmi-proxy=1.32.0-1ubuntu0.22.04.1
-    - libqmi-utils=1.32.0-1ubuntu0.22.04.1
+    - libgudev-1.0-0=1:238-5ubuntu1
+    - libmbim-glib4=1.31.2-0ubuntu3
+    - libmbim-proxy=1.31.2-0ubuntu3
+    - libmbim-utils=1.31.2-0ubuntu3
+    - libqmi-glib5=1.35.2-0ubuntu2
+    - libqmi-proxy=1.35.2-0ubuntu2
+    - libqmi-utils=1.35.2-0ubuntu2
+    - libqrtr-glib0=1.2.2-1ubuntu4
     override-build: |
       set -ex
-      "/build/ci-modem-manager-rrr7aamv3xld9o1p/stage"/build-tools/check-versions modemmanager
+      cd "$CRAFT_PART_SRC"
+      "/build/ci-modem-manager-bvjo2e3olsqei022/stage"/build-tools/check-versions modemmanager
       # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"
-      git am "/build/ci-modem-manager-rrr7aamv3xld9o1p"/patch/*.patch
-      # Build (rename .git so configure sets release flag)
-      mv .git git
+      git am "/build/ci-modem-manager-bvjo2e3olsqei022"/patch/*.patch
+      cd "$CRAFT_PART_BUILD"
       craftctl default
       # Run all tests ModemManager ships by default
-      make check
-      mv git .git
+      ninja test
       # Strip binaries
       find "$CRAFT_PART_INSTALL"/ -executable -type f | xargs file -Ni |
           grep 'application/x-.*executable\|application/x-.*sharedlib' | cut -d: -f1 | xargs strip
@@ -186,6 +184,7 @@ parts:
     - usr/lib/libmm-glib.so*
     - usr/share/doc/libgudev-1.0-0
     - usr/lib/*/libmbim-glib.so*
+    - usr/lib/*/libqrtr-glib.so*
     - usr/bin/mbimcli
     - usr/bin/mbim-network
     - usr/share/doc/libmbim-glib4
@@ -203,16 +202,17 @@ parts:
 architectures:
 - armhf
 image-info:
-  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-rrr7aamv3xld9o1p/+build/2206711
+  build_url: https://launchpad.net/~snappy-hwe-team/+snap/ci-modem-manager-bvjo2e3olsqei022/+build/2516835
 build-packages: []
 build-snaps: []
 primed-stage-packages:
-- libgudev-1.0-0=1:237-2build1
-- libmbim-glib4=1.28.0-1~ubuntu20.04.1
-- libmbim-proxy=1.28.0-1~ubuntu20.04.1
-- libmbim-utils=1.28.0-1~ubuntu20.04.1
-- libmm-glib0=1.20.0-1~ubuntu22.04.2
-- libqmi-glib5=1.32.0-1ubuntu0.22.04.1
-- libqmi-proxy=1.32.0-1ubuntu0.22.04.1
-- libqmi-utils=1.32.0-1ubuntu0.22.04.1
-- modemmanager=1.20.0-1~ubuntu22.04.2
+- libgudev-1.0-0=1:238-5ubuntu1
+- libmbim-glib4=1.31.2-0ubuntu3
+- libmbim-proxy=1.31.2-0ubuntu3
+- libmbim-utils=1.31.2-0ubuntu3
+- libmm-glib0=1.23.4-0ubuntu2
+- libqmi-glib5=1.35.2-0ubuntu2
+- libqmi-proxy=1.35.2-0ubuntu2
+- libqmi-utils=1.35.2-0ubuntu2
+- libqrtr-glib0=1.2.2-1ubuntu4
+- modemmanager=1.23.4-0ubuntu2
