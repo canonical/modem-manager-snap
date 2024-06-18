@@ -1,3 +1,271 @@
+2024-06-18 modem-manager 1.23.4-1
+
+  [ Philip Meulengracht <the_meulengracht@hotmail.com> ]
+  * snapcraft: update to noble build, switch build system to meson
+    Merge pull request #11 from snapcore/pr/snap-24-update-to-noble
+  * github: do not enable riscv64 for now
+    Merge pull request #12 from snapcore/pr/snap-24-update-to-noble
+
+  [ Changes in primed packages ]
+  
+  libqrtr-glib0 (1.2.2-1ubuntu4): new primed package
+  
+  libgudev-1.0-0 (built from libgudev) updated from 1:237-2build1 to 1:238-5ubuntu1:
+  
+  libmbim-glib4, libmbim-proxy, libmbim-utils (built from libmbim) updated from 1.28.0-1~ubuntu20.04.1 to 1.31.2-0ubuntu3:
+  
+    libmbim (1.31.2-0ubuntu3) noble; urgency=medium
+  
+      * No-change rebuild for CVE-2024-3094
+  
+     -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 31 Mar 2024 02:07:22 +0000
+  
+    libmbim (1.31.2-0ubuntu2) noble; urgency=medium
+  
+      * Include correctly the symbols refresh
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 29 Feb 2024 22:02:39 +0100
+  
+    libmbim (1.31.2-0ubuntu1) noble; urgency=medium
+  
+      * New upstream version
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 29 Feb 2024 21:08:43 +0100
+  
+    libmbim (1.30.0-1) unstable; urgency=medium
+  
+      * New upstream version 1.30.0
+      * d/clean: clean up python compiled bytecode files (Closes: #1046871)
+      * libmbim-glib4: update symbols file for new upstream release
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Fri, 20 Oct 2023 12:49:46 +0200
+  
+    libmbim (1.28.4-2) unstable; urgency=medium
+  
+      * Release to unstable
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 13 Jun 2023 16:35:22 +0200
+  
+    libmbim (1.28.4-1) experimental; urgency=medium
+  
+      * New upstream version 1.28.4
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Sun, 23 Apr 2023 15:46:04 +0200
+  
+    libmbim (1.28.2-1) unstable; urgency=medium
+  
+      * d/watch: only watch for stable releases
+        `libmbim` has a x.y.z version numbering scheme where y is even for
+        stable releases and odd for development ones. Stable release candidates
+        have x.y-rcz version numbers with y being an even number. This change
+        ensures we only watch for stable releases, including RCs.
+      * New upstream version 1.28.2
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Mon, 19 Dec 2022 11:48:42 +0100
+  
+    libmbim (1.28.0-1) unstable; urgency=medium
+  
+      * New upstream version 1.28.0
+      * d/watch: look for git tags instead of source tarballs.
+        Upstream stopped publishing source tarballs and now requests that we
+        use (signed) git tags for new versions. Take this opportunity to update
+        the upstream signing key.
+      * d/rules: adapt to upstream build system change.
+        Upstream switched from `autotools` to `meson`. As a consequence,
+        configure options are handled differently, so let's adapt to those
+        changes.
+        Note: introspection is now enabled by default, so we don't need to
+        explicitly enable it anymore.
+      * d/control: update build dependencies
+        `meson` is now the only build system supported for this package, which
+        now also depends on `bash-completion` at build time. While at it,
+        update my email and bump Standards-Version as no other change is
+        required.
+      * libmbim-glib4: update symbols file for new upstream release
+      * debian: update lintian overrides
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Fri, 28 Oct 2022 14:25:12 +0200
+  
+  libqmi-glib5, libqmi-proxy, libqmi-utils (built from libqmi) updated from 1.32.0-1ubuntu0.22.04.1 to 1.35.2-0ubuntu2:
+  
+    libqmi (1.35.2-0ubuntu2) noble; urgency=medium
+  
+      * No-change rebuild for CVE-2024-3094
+  
+     -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 31 Mar 2024 02:12:03 +0000
+  
+    libqmi (1.35.2-0ubuntu1) noble; urgency=medium
+  
+      * New upstream serie
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 29 Feb 2024 20:59:44 +0100
+  
+    libqmi (1.34.0-2) unstable; urgency=medium
+  
+      * d/patches: fix build on big endian architectures
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Sat, 21 Oct 2023 11:55:32 +0200
+  
+    libqmi (1.34.0-1) unstable; urgency=medium
+  
+      * New upstream version 1.34.0
+      * d/clean: clean up python compiled bytecode files (Closes: #1047700)
+      * libqmi-glib5: update symbols file for new upstream release
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Fri, 20 Oct 2023 12:53:59 +0200
+  
+    libqmi (1.32.4-2) unstable; urgency=medium
+  
+      * Release to unstable
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 13 Jun 2023 16:37:04 +0200
+  
+    libqmi (1.32.4-1) experimental; urgency=medium
+  
+      * New upstream version 1.32.4
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Sun, 23 Apr 2023 15:46:07 +0200
+  
+    libqmi (1.32.2-1) unstable; urgency=medium
+  
+      * d/watch: only watch for stable releases
+        `libqmi` has a x.y.z version numbering scheme where y is even for
+        stable releases and odd for development ones. Stable release candidates
+        have x.y-rcz version numbers with y being an even number. This change
+        ensures we only watch for stable releases, including RCs.
+      * New upstream version 1.32.2
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Mon, 19 Dec 2022 11:51:57 +0100
+  
+  libmm-glib0, modemmanager (built from modemmanager) updated from 1.20.0-1~ubuntu22.04.2 to 1.23.4-0ubuntu2:
+  
+    modemmanager (1.23.4-0ubuntu2) noble; urgency=medium
+  
+      * No-change rebuild for CVE-2024-3094
+  
+     -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 31 Mar 2024 02:34:30 +0000
+  
+    modemmanager (1.23.4-0ubuntu1) noble; urgency=medium
+  
+      * New upstream serie
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 29 Feb 2024 21:06:15 +0100
+  
+    modemmanager (1.22.0-3) unstable; urgency=medium
+  
+      [ Jeremy Bícha ]
+      * d/control: update build dependencies.
+        Upstream bumped the required version for `libmbim` and `libqmi`.
+  
+      [ Arnaud Ferraris ]
+      * d/control: build-depend on systemd-dev instead of udev.
+        We only needed `udev` for its pkg-config file, which is now shipped in
+        `systemd-dev`. (Closes: #1060566)
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Sat, 20 Jan 2024 12:14:00 +0100
+  
+    modemmanager (1.22.0-2) unstable; urgency=medium
+  
+      * modemmanager: acknowledge udev rules now being under /usr.
+        (Closes: #1057269)
+      * d/control: make libmm-glib-dev depend on libglib2.0-dev.
+        This is required as `libmm-glib` is actually built on top of `glib`.
+        (Closes: #1035481)
+      * d/gbp.conf: use 'debian/latest' as debian branch.
+        This way we stay consistent with the other team-maintained packages.
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 02 Jan 2024 09:35:55 +0100
+  
+    modemmanager (1.22.0-2~exp1) experimental; urgency=medium
+  
+      * d/gbp.conf: use 'debian/experimental' as debian branch
+      * debian: keep systemd service under /usr.
+        In the current state of the Debian "/usr merge", we are allowed to move
+        systemd services under `/usr/lib/systemd` when relying on
+        `dh_installsystemd`. This requires adding a versioned dependency on
+        `debhelper`.
+        Let's comply by no longer overriding `systemdsystemunitdir`.
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Mon, 30 Oct 2023 17:41:57 +0100
+  
+    modemmanager (1.22.0-1) unstable; urgency=medium
+  
+      * New upstream version 1.22.0
+      * prerm: drop invalid  option (Closes: #1038858)
+      * d/control: update build dependencies
+        Upstream bumped the required version for `libmbim` and `libqmi`.
+      * d/patches: drop backported patch.
+        This is part of the new released version, so no need for us to carry it
+        anymore.
+      * libmm-glib0: update symbols file for new upstream release
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Sat, 21 Oct 2023 10:37:44 +0200
+  
+    modemmanager (1.20.6-2) unstable; urgency=medium
+  
+      * d/patches: backport patch fixing SMS reception after suspend on Librem 5
+      * d/rules: install D-bus policy to proper system folder.
+        Fixes: lintian: dbus-policy-in-etc
+      * d/control: drop alternate dependency on `policykit-1`
+        This used to be a transitional package for bookworm, it is now obsolete
+        and shouldn't be mentioned moving forward.
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 13 Jun 2023 16:56:17 +0200
+  
+    modemmanager (1.20.6-1) experimental; urgency=medium
+  
+      * New upstream version 1.20.6
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Sun, 23 Apr 2023 15:49:32 +0200
+  
+    modemmanager (1.20.4-1) unstable; urgency=medium
+  
+      * New upstream version 1.20.4
+      * d/control: bump Standards-Version, no change required
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 03 Jan 2023 13:34:49 +0100
+  
+    modemmanager (1.20.2-1) unstable; urgency=medium
+  
+      * d/watch: only watch for stable releases.
+        ModemManager has a x.y.z version numbering scheme where y is even for
+        stable releases and odd for development ones. Stable release candidates
+        have x.y-rcz version numbers with y being an even number. This change
+        ensures we only watch for stable releases, including RCs.
+      * New upstream version 1.20.2
+      * d/patches: drop upstreamed patch
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Mon, 19 Dec 2022 13:59:08 +0100
+  
+    modemmanager (1.20.0-1) unstable; urgency=medium
+  
+      * New upstream version 1.20.0
+      * d/control: depend on polkitd instead of policykit-1
+        `policykit-1` has recently been split in 2 packages and replaced by a
+        transitional package. The one we actually need is `polkitd`, so let's
+        have this one as the "main" dependency.
+        However, as this package is often backported to bullseye as well, let's
+        use an alternative as `polkitd` only exists in current testing/sid.
+        (Closes: #1022072)
+      * d/watch: look for git tags instead of source tarballs.
+        Upstream stopped publishing source tarballs and now requests that we
+        use (signed) git tags for new versions.
+      * d/control: update build dependencies for new version.
+        Upstream changed build system from `autotools` to `meson`, let's
+        acknowledge this change. Due to the way `meson` looks for build
+        dependencies, this also requires adding a few more one to ensure the
+        package gets properly built.
+      * d/rules: update for build system change.
+        With the change to `meson` as the build system, configure options are
+        handled differently, requiring minor changes to our package.
+      * debian: honor nodoc build profile.
+        Documentation was previously always built.
+      * debian: update lintian-overrides for new version
+      * libmm-glib0: update symbols file for new release
+      * d/patches: make build reproducible
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Fri, 28 Oct 2022 17:54:26 +0200
+  
 2023-08-21 modem-manager 1.20.0-2
 
   [ alfonsosanchezbeato <alfonso.sanchez-beato@canonical.com> ]
