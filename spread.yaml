@@ -68,10 +68,11 @@ backends:
 
   qemu:
     memory: 4G
+    environment:
+      DEFAULT_NETPLAN_FILE: 00-snapd-config.yaml
     systems:
-      - ubuntu-core-24:
-          # TODO how is this done in snapd spread?
-          #bios: /usr/share/OVMF/OVMF_CODE.fd
+      - ubuntu-core-26:
+          bios: uefi
           username: test
           password: test
 
@@ -105,8 +106,10 @@ prepare: |
   "$SYSTEMSNAPSTESTLIB"/prepare.sh
 
 prepare-each: |
-  # OBS: This is temporary to bootstrap
-  snap install --dangerous "$PROJECT_PATH"/"$name"*_amd64.snap
+  # OBS: This is temporary to bootstrap. Remove once the snap is published to stable
+  # and leave only the prepare-each.sh sommand
+  snap install --dangerous "$PROJECT_PATH"/"$SNAP_NAME"*_amd64.snap
+  snap connect modem-manager:mmcli modem-manager:service
   # Run prepare-each step which is a bit of a no-op now
   "$SYSTEMSNAPSTESTLIB"/prepare-each.sh "$SNAP_NAME" 26/stable
 
