@@ -1,0 +1,33 @@
+From 49fb75cd945643c3d1f7bededb5e2cc854bc3146 Mon Sep 17 00:00:00 2001
+From: Lorenzo Medici <lorenzo.medici@canonical.com>
+Date: Fri, 20 Mar 2026 16:24:04 +0200
+Subject: [PATCH 1/1] cinterion: add USB interface number 0x05 for TX62 modem
+
+Backports 49fb75cd945643c3d1f7bededb5e2cc854bc3146 merged to upstream
+Author: Lorenzo Medici <lorenzo.medici@canonical.com>
+Date:   Fri Mar 20 16:24:04 2026 +0200
+MR:     https://gitlab.freedesktop.org/mobile-broadband/ModemManager/-/merge_requests/1435/commits
+
+Signed-off-by: Lorenzo Medici <lorenzo.medici@canonical.com>
+---
+ src/plugins/cinterion/mm-broadband-bearer-cinterion.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/plugins/cinterion/mm-broadband-bearer-cinterion.c b/src/plugins/cinterion/mm-broadband-bearer-cinterion.c
+index 396837fe..4bd9234f 100644
+--- a/src/plugins/cinterion/mm-broadband-bearer-cinterion.c
++++ b/src/plugins/cinterion/mm-broadband-bearer-cinterion.c
+@@ -60,6 +60,10 @@ static const UsbInterfaceConfig usb_interface_configs[] = {
+         .swwan_index   = 1,
+         .usb_iface_num = 0x08,
+     },
++    {
++        .swwan_index = 1,
++        .usb_iface_num = 0x05,
++    }
+ };
+ 
+ static gint
+-- 
+2.43.0
+

@@ -1,0 +1,35 @@
+From 6b6997362b5530708725c16c80ef36cd21609f20 Mon Sep 17 00:00:00 2001
+From: Lorenzo Medici <lorenzo.medici@canonical.com>
+Date: Tue, 24 Mar 2026 09:32:39 +0200
+Subject: [PATCH 1/1] modem-helpers-cinterion: allow spaces in ^SXRAT test
+ response
+
+^SXRAT: (0-6), (0,2,3), (0,2,3)
+
+Fixes: https://gitlab.freedesktop.org/mobile-broadband/ModemManager/-/issues/974
+
+Backports 6b6997362b5530708725c16c80ef36cd21609f20 first released in 1.25.1 by
+Author: Dan Williams <dan@ioncontrol.co>
+Date:   Sun Apr 13 19:56:56 2025 -0500
+
+Signed-off-by: Lorenzo Medici <lorenzo.medici@canonical.com>
+---
+ src/plugins/cinterion/mm-modem-helpers-cinterion.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/plugins/cinterion/mm-modem-helpers-cinterion.c b/src/plugins/cinterion/mm-modem-helpers-cinterion.c
+index 7c16fc4f..a9912c4a 100644
+--- a/src/plugins/cinterion/mm-modem-helpers-cinterion.c
++++ b/src/plugins/cinterion/mm-modem-helpers-cinterion.c
+@@ -778,7 +778,7 @@ mm_cinterion_parse_sxrat_test (const gchar *response,
+         return FALSE;
+     }
+ 
+-    r = g_regex_new ("\\^SXRAT:\\s*\\(([^\\)]*)\\),\\(([^\\)]*)\\)(,\\(([^\\)]*)\\))?(?:\\r\\n)?",
++    r = g_regex_new ("\\^SXRAT:\\s*\\(([^\\)]*)\\),\\s*\\(([^\\)]*)\\)(,\\s*\\(([^\\)]*)\\))?(?:\\r\\n)?",
+                      G_REGEX_DOLLAR_ENDONLY | G_REGEX_RAW,
+                      0, NULL);
+ 
+-- 
+2.43.0
+
