@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.24.2-0ubuntu1 # Launchpad repo version, not final?
+version: 1.25.95-1ubuntu1
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -107,7 +107,8 @@ parts:
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/ubuntu/resolute
+    # TODO: change to applied/ubuntu/resolute once LP branch points to version 1.25.95-1
+    source-branch: ubuntu/resolute-proposed
 
     meson-parameters:
       - --prefix=/usr
