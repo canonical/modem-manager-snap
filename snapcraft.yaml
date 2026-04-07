@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.25.95-1ubuntu1
+version: 1.25.95-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -156,7 +156,6 @@ parts:
       - libmbim-glib-dev
       # Core26
       - bash-completion
-      - udev
       - systemd-dev
 
     stage-packages:
