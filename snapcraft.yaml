@@ -1,5 +1,5 @@
 name: modem-manager
-version: 1.23.4-3-dev
+version: 1.25.95-1-dev
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -8,10 +8,11 @@ description: |
   power supplies, ModemManager is able to prepare and configure the modems and
   setup connections with them.
   Please find the source code at
-  https://github.com/snapcore/modem-manager-snap/tree/snap-24
+  https://github.com/snapcore/modem-manager-snap/tree/snap-26
 confinement: strict
-grade: stable
-base: core24
+grade: devel
+base: core26
+build-base: devel
 
 slots:
   service: modem-manager
@@ -106,7 +107,8 @@ parts:
 
     source: https://git.launchpad.net/ubuntu/+source/modemmanager
     source-type: git
-    source-branch: applied/ubuntu/noble
+    # TODO: change to applied/ubuntu/resolute once LP branch points to version 1.25.95-1
+    source-branch: ubuntu/resolute-proposed
 
     meson-parameters:
       - --prefix=/usr
@@ -117,7 +119,7 @@ parts:
       - -Dgtk_doc=false
       - -Dpolkit=no
       - -Dvapi=false
-    
+
     build-environment:
       - CFLAGS: "-O2 -Wl,-z,relro,-z,now"
 
@@ -152,6 +154,9 @@ parts:
       - python3-gi
       - libqmi-glib-dev
       - libmbim-glib-dev
+      # Core26
+      - bash-completion
+      - systemd-dev
 
     stage-packages:
       - libqmi-glib5
@@ -166,7 +171,8 @@ parts:
     override-build: |
       set -ex
       cd "$CRAFT_PART_SRC"
-      "$CRAFT_STAGE"/build-tools/check-versions modemmanager
+      # TODO uncomment this, failing until git repo and deb package are synced with each other
+      #"$CRAFT_STAGE"/build-tools/check-versions modemmanager
       # Apply snap related patches
       git config user.email "snapcraft@canonical.com"
       git config user.name "snapcraft"

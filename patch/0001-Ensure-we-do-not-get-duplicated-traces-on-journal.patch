@@ -16,7 +16,7 @@ diff --git a/src/mm-log.c b/src/mm-log.c
 index 26260b7..080f957 100644
 --- a/src/mm-log.c
 +++ b/src/mm-log.c
-@@ -339,7 +339,7 @@ mm_log_setup (const gchar  *level,
+@@ -363,7 +363,7 @@ mm_log_setup (const gchar  *level,
      } else
  #endif
      if (!log_file) {
