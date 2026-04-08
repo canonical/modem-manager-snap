@@ -1,9 +1,9 @@
 snapcraft-version: 8.14.4
-snapcraft-started-at: '2026-04-08T14:45:31.922159Z'
+snapcraft-started-at: '2026-04-08T17:18:50.856200Z'
 snapcraft-os-release-id: ubuntu
 snapcraft-os-release-version-id: '26.04'
 name: modem-manager
-version: 1.25.95-1
+version: 1.25.95-2
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -250,7 +250,7 @@ parts:
 architectures:
 - arm64
 image-info:
-  build_url: https://launchpad.net/~snappy-hwe-team/+snap/modem-manager-snap-26/+build/3114635
+  build_url: https://launchpad.net/~snappy-hwe-team/+snap/modem-manager-snap-26/+build/3114813
 build-packages: []
 build-snaps: []
 primed-stage-packages:
