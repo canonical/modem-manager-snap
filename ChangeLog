@@ -1,3 +1,271 @@
+2026-04-08 modem-manager 1.25.95-1
+
+  [ alfonsosanchezbeato <alfonso.sanchez-beato@canonical.com> ]
+  * SECURITY.md: introduce the security policy
+    Merge pull request #15 from Meulengracht/26-security-md
+  * Begin core26 development
+    Merge pull request #16 from lorenzo-medici/begin-core26-devel
+  * core26: patch: add support for Telit Cinterion TX62-W-C
+    Merge pull request #18 from lorenzo-medici/add-TX62-support-core26
+
+  [ Changes in primed packages ]
+  
+  libselinux1 (3.9-4build1): new primed package
+  
+  libgudev-1.0-0 (built from libgudev) updated from 1:238-5ubuntu1 to 1:238-7build1:
+  
+  libmbim-glib4, libmbim-proxy, libmbim-utils (built from libmbim) updated from 1.31.2-0ubuntu3 to 1.32.0-2ubuntu1:
+  
+    libmbim (1.32.0-2ubuntu1) resolute; urgency=medium
+  
+      * Merge with Debian (lp: #2130116), remaining changes
+      * Add Intel mbim service to send AT command
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 01 Dec 2025 22:53:30 +0100
+  
+    libmbim (1.32.0-2) unstable; urgency=medium
+  
+      [ Guido Günther ]
+      * d/gbp.conf: Switch to debian/latest.
+        And sync options with libqmi packaging
+  
+      [ Arnaud Ferraris ]
+      * d/watch: convert to version 5.
+        Use the new Gitlab template for easier management, but override the
+        matching pattern so we only get stable (pre)releases, which have an even
+        minor version number.
+      * d/control: drop libgirepository1.0-dev build dependency.
+        This one shouldn't be used anymore as it isn't multiarch-friendly.
+        Instead, use a recent `gobject-introspection` and explicitly (build)
+        depend on the needed `gir1.2-*-dev` packages.
+        While at it, drop the now-obsolete `Rules-Requires-Root` and bump
+        `Standards-Version` as no other change is needed. (Closes: #1118875)
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 28 Oct 2025 13:03:18 +0100
+  
+    libmbim (1.32.0-1) unstable; urgency=medium
+  
+      * New upstream version. This is the release for the RC currently in Trixie.
+  
+     -- Guido Günther <agx@sigxcpu.org>  Tue, 08 Apr 2025 23:27:39 +0200
+  
+    libmbim (1.31.95-2) unstable; urgency=medium
+  
+      * Upload release candidate to unstable
+      * Add superficial autopkg test
+  
+     -- Guido Günther <agx@sigxcpu.org>  Mon, 10 Mar 2025 12:50:25 +0100
+  
+    libmbim (1.31.95-1) experimental; urgency=medium
+  
+      * New upstream version 1.31.95
+  
+     -- Guido Günther <agx@sigxcpu.org>  Sun, 09 Mar 2025 22:05:19 +0100
+  
+    libmbim (1.31.6-1) experimental; urgency=medium
+  
+      * Upload to experimental
+      * gbp.conf: Use branches that don't conflict with released versions
+      * New upstream version 1.31.6
+      * Update symbols file
+      * d/control: Use pkgconf
+  
+     -- Guido Günther <agx@sigxcpu.org>  Tue, 25 Feb 2025 14:54:46 +0100
+  
+  libqmi-glib5, libqmi-proxy, libqmi-utils (built from libqmi) updated from 1.35.2-0ubuntu2 to 1.38.0-1:
+  
+    libqmi (1.38.0-1) unstable; urgency=medium
+  
+      * Upload to unstable
+      * New upstream stable release
+      * Link docs to devhelp.
+      * Update symbols
+  
+     -- Guido Günther <agx@sigxcpu.org>  Thu, 08 Jan 2026 19:23:18 +0100
+  
+    libqmi (1.37.95-1) experimental; urgency=medium
+  
+      * New upstream release
+      * Update upstream signing from
+        https://lists.freedesktop.org/archives/networkmanager/2024-December/000366.html
+      * Update symbols
+  
+     -- Guido Günther <agx@sigxcpu.org>  Wed, 26 Nov 2025 10:13:58 +0100
+  
+    libqmi (1.37.1-1) experimental; urgency=medium
+  
+      * New upstream development snapshot
+      * Upload to experimental
+      * signing-key: Add key used for dev snapshots
+      * d/watch: Allow for development snapshots
+      * d/gbp.conf: Switch to debian/experimental
+      * Use gi-docgen. Upstream switched away from gtk-doc
+      * Add new symbols
+  
+     -- Guido Günther <agx@sigxcpu.org>  Tue, 03 Jun 2025 20:37:05 +0200
+  
+    libqmi (1.36.0-2) unstable; urgency=medium
+  
+      [ Guido Günther ]
+      * d/gbp.conf: Switch to debian/latest.
+  
+      [ Arnaud Ferraris ]
+      * d/watch: convert to version 5.
+        Use the new Gitlab template for easier management, but override the
+        matching pattern so we only get stable (pre)releases, which have an even
+        minor version number.
+      * d/control: drop libgirepository1.0-dev build dependency.
+        This one shouldn't be used anymore as it isn't multiarch-friendly.
+        Instead, use a recent `gobject-introspection` and explicitly (build)
+        depend on the needed `gir1.2-*-dev` packages.
+        While at it, drop the now-obsolete `Rules-Requires-Root` and bump
+        `Standards-Version` as no other change is needed. (Closes: #1118881)
+      * d/copyright: drop reference to old FSF address.
+        Replace it with the usual link to http://www.gnu.org/licenses/.
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 28 Oct 2025 13:03:13 +0100
+  
+    libqmi (1.36.0-1) unstable; urgency=medium
+  
+      * New upstream release
+      * Update symbols
+  
+     -- Guido Günther <agx@sigxcpu.org>  Wed, 09 Apr 2025 10:04:46 +0200
+  
+    libqmi (1.35.95-2) unstable; urgency=medium
+  
+      * Upload to unstable
+      * d/control: libgmi-glib-dev needs libmbim-glib-dev
+      * Add superficial autopkgtest
+  
+     -- Guido Günther <agx@sigxcpu.org>  Tue, 11 Mar 2025 09:47:33 +0100
+  
+    libqmi (1.35.95-1) experimental; urgency=medium
+  
+      * New upstream version 1.35.95
+      * Update symbols
+      * Use pkgconf rather than pkg-config
+      * Bump standards version
+  
+     -- Guido Günther <agx@sigxcpu.org>  Sun, 09 Mar 2025 22:17:42 +0100
+  
+    libqmi (1.35.6-1) experimental; urgency=medium
+  
+      * New upstream version 1.35.6
+      * Update symbols
+      * Drop patch, applied upstream
+  
+     -- Guido Günther <agx@sigxcpu.org>  Thu, 12 Sep 2024 12:14:10 +0200
+  
+  libqrtr-glib0 (built from libqrtr-glib) updated from 1.2.2-1ubuntu4 to 1.2.2-2ubuntu1:
+  
+    libqrtr-glib (1.2.2-2ubuntu1) resolute; urgency=medium
+  
+      * Merge with Debian unstable (lp: #2130172). Remaining changes:
+        - debian/tests: include a basic autopkgtest for the library
+  
+     -- Sebastien Bacher <seb128@ubuntu.com>  Fri, 31 Oct 2025 09:13:50 +0100
+  
+    libqrtr-glib (1.2.2-2) unstable; urgency=medium
+  
+      * d/gbp.conf: switch Debian branch to debian/latest.
+        Also add a few more defaults (copied from libqmi) for consistency.
+      * d/watch: convert to version 5.
+        Use the new Gitlab template for easier management, but override the
+        matching pattern so we only get stable (pre)releases, which have an even
+        minor version number. (Closes: #1081060)
+      * d/control: modernize build dependencies
+        `libgirepository1.0-dev` shouldn't be used anymore as it isn't
+        multiarch-friendly. Instead, use a recent `gobject-introspection` and
+        explicitly (build) depend on the needed `gir1.2-*-dev` packages.
+        Similarly, `pkg-config` has been deprecated in favor of `pkgconf`.
+        While at it, drop the now-obsolete `Rules-Requires-Root` and bump
+        `Standards-Version` as no other change is needed. (Closes: #1118881)
+      * debian: drop now-unneeded lintian overrides
+      * d/copyright: fix small issues.
+        One of the `meson.build` files is mentioned with a wrong path. Moreover,
+        the GPL-2+ text still mentions the (old) FSF street address, replace it
+        with the usual reference to http://www.gnu.org/licenses/.
+  
+     -- Arnaud Ferraris <aferraris@debian.org>  Tue, 28 Oct 2025 13:03:28 +0100
+  
+  libmm-glib0, modemmanager (built from modemmanager) updated from 1.23.4-0ubuntu2 to 1.25.95-1ubuntu1:
+  
+    modemmanager (1.25.95-1ubuntu1) resolute; urgency=medium
+  
+      * d/t/control: disable broken 'unittests' autopkgtest (LP: #2143721)
+  
+     -- Paride Legovini <paride@ubuntu.com>  Mon, 09 Mar 2026 16:41:44 +0100
+  
+    modemmanager (1.25.95-1) experimental; urgency=medium
+  
+      * New upstream release candidate
+      * Drop all patches. Applied upstream.
+      * Bump libqmi dependency
+      * Conditionally disable some CI tests for experimental
+  
+     -- Guido Günther <agx@sigxcpu.org>  Thu, 27 Nov 2025 18:04:32 +0100
+  
+    modemmanager (1.25.1-1) experimental; urgency=medium
+  
+      * New upstream development snapshot
+      * Upload to experimental
+      * Bump libqmi dependency
+      * Add new symbols
+      * signing-key: Add key used for dev snapshots
+      * d/gbp.conf: Switch to 1.25 development snapshots
+      * d/watch: Allow for development snapshots
+      * Add patch to fix test case failure
+  
+     -- Guido Günther <agx@sigxcpu.org>  Wed, 04 Jun 2025 17:14:02 +0200
+  
+    modemmanager (1.24.0-1) unstable; urgency=medium
+  
+      * New upstream release. Final release of RC already in Trixie.
+      * libmm-glib0: Update symbols
+      * d/control: Bump libmbim and libqmi versions.
+        Depend on the final versions rather than the RCs.
+  
+     -- Guido Günther <agx@sigxcpu.org>  Fri, 11 Apr 2025 23:32:31 +0200
+  
+    modemmanager (1.23.95-2) unstable; urgency=medium
+  
+      * Upload to unstable
+      * Bump standards version to 4.7.2
+  
+     -- Guido Günther <agx@sigxcpu.org>  Thu, 13 Mar 2025 14:34:38 +0100
+  
+    modemmanager (1.23.95-1) experimental; urgency=medium
+  
+      * New upstream version 1.23.95
+      * Add superficial autopktests
+      * Bump libqmi and libmbim build dependencies
+      * Update symbols
+      * Bump standards version
+      * Depend on dh-sequence-gir
+  
+     -- Guido Günther <agx@sigxcpu.org>  Tue, 11 Mar 2025 17:49:57 +0100
+  
+    modemmanager (1.23.12-1) experimental; urgency=medium
+  
+      [ Arnaud Ferraris ]
+      * d/control: depend on gobject-introspection-bin.
+        This is now the package containing `dh_girepository`, having been split
+        from `gobject-introspection`.
+        Fixes: lintian: missing-build-dependency-for-dh-addon gir
+  
+      [ Jeremy Bicha ]
+      * Drop unnecessary Build-Depends: gnome-common, intltool, libtool
+  
+      [ Guido Günther ]
+      * gbp.conf: Use branches that don't conflict with released versions
+      * New upstream version 1.23.12
+      * docs: README got renamed to README.md
+      * Update symbols
+      * d/control: Bump libqmi build-dep
+  
+     -- Guido Günther <agx@sigxcpu.org>  Tue, 25 Feb 2025 15:19:33 +0100
+  
 2024-06-18 modem-manager 1.23.4-2
 
   [ Changes in primed packages ]
