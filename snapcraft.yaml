@@ -10,9 +10,8 @@ description: |
   Please find the source code at
   https://github.com/snapcore/modem-manager-snap/tree/snap-26
 confinement: strict
-grade: devel
+grade: stable
 base: core26
-build-base: devel
 
 slots:
   service: modem-manager
