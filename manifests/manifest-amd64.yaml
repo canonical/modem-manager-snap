@@ -1,9 +1,9 @@
-snapcraft-version: 8.14.4
-snapcraft-started-at: '2026-04-08T17:11:15.796366Z'
+snapcraft-version: 8.14.5.post106
+snapcraft-started-at: '2026-04-27T18:38:42.118367Z'
 snapcraft-os-release-id: ubuntu
 snapcraft-os-release-version-id: '26.04'
 name: modem-manager
-version: 1.25.95-2
+version: 1.25.95-3
 summary: ModemManager is a service which controls mobile broadband
 description: |
   ModemManager is a DBus-activated daemon which controls mobile broadband
@@ -14,7 +14,7 @@ description: |
   Please find the source code at
   https://github.com/snapcore/modem-manager-snap/tree/snap-26
 base: core26
-grade: devel
+grade: stable
 confinement: strict
 apps:
   mmcli:
@@ -82,54 +82,14 @@ parts:
     - dpkg-dev
     - git
     stage-packages:
-    - base-files=14ubuntu5
-    - dbus-bin=1.16.2-2ubuntu4
-    - dbus-daemon=1.16.2-2ubuntu4
-    - dbus-session-bus-common=1.16.2-2ubuntu4
-    - dbus-system-bus-common=1.16.2-2ubuntu4
-    - dbus=1.16.2-2ubuntu4
-    - debconf=1.5.92
-    - gcc-16-base=16-20260322-1ubuntu1
-    - libacl1=2.3.2-2
-    - libapparmor1=5.0.0~beta1-0ubuntu5
-    - libatomic1=16-20260322-1ubuntu1
-    - libaudit-common=1:4.1.2-1build1
-    - libaudit1=1:4.1.2-1build1
-    - libc-gconv-modules-extra=2.43-2ubuntu1
-    - libcap-ng0=0.8.5-4build5
-    - libdb5.3t64=5.3.28+dfsg2-10ubuntu1
-    - libdbus-1-3=1.16.2-2ubuntu4
-    - libduktape207=2.7.0+tests-0ubuntu4
-    - libexpat1=2.7.4-1
-    - libffi8=3.5.2-3
-    - libglib2.0-0t64=2.88.0-1
     - libgudev-1.0-0=1:238-7build1
     - libmbim-glib4=1.32.0-2ubuntu1
     - libmbim-proxy=1.32.0-2ubuntu1
     - libmm-glib0=1.25.95-1ubuntu1
-    - libpam-modules-bin=1.7.0-5ubuntu3
-    - libpam-modules=1.7.0-5ubuntu3
-    - libpam-runtime=1.7.0-5ubuntu3
-    - libpam-systemd=259.5-0ubuntu1
-    - libpam0g=1.7.0-5ubuntu3
-    - libpolkit-agent-1-0=127-2
     - libqmi-glib5=1.38.0-1
     - libqmi-proxy=1.38.0-1
     - libqrtr-glib0=1.2.2-2ubuntu1
-    - libsmartcols1=2.41.3-3ubuntu2
-    - libssl3t64=3.5.5-1ubuntu1
-    - libsystemd-shared=259.5-0ubuntu1
-    - libzstd1=1.5.7+dfsg-3
-    - mawk=1.3.4.20260129-1
     - modemmanager=1.25.95-1ubuntu1
-    - mount=2.41.3-3ubuntu2
-    - openssl-provider-legacy=3.5.5-1ubuntu1
-    - polkitd=127-2
-    - sed=4.9-2build3
-    - sgml-base=1.31+nmu1build1
-    - systemd-sysv=259.5-0ubuntu1
-    - systemd=259.5-0ubuntu1
-    - xml-core=0.19build1
     override-build: |
       set -ex
       find "$CRAFT_PART_INSTALL"/ -type f,l \
@@ -195,11 +155,6 @@ parts:
     - bash-completion
     - systemd-dev
     stage-packages:
-    - gcc-16-base=16-20260322-1ubuntu1
-    - libatomic1=16-20260322-1ubuntu1
-    - libc-gconv-modules-extra=2.43-2ubuntu1
-    - libffi8=3.5.2-3
-    - libglib2.0-0t64=2.88.0-1
     - libgudev-1.0-0=1:238-7build1
     - libmbim-glib4=1.32.0-2ubuntu1
     - libmbim-proxy=1.32.0-2ubuntu1
@@ -250,7 +205,7 @@ parts:
 architectures:
 - amd64
 image-info:
-  build_url: https://launchpad.net/~snappy-hwe-team/+snap/modem-manager-snap-26/+build/3114818
+  build_url: https://launchpad.net/~snappy-hwe-team/+snap/modem-manager-snap-26/+build/3134478
 build-packages: []
 build-snaps: []
 primed-stage-packages:
@@ -263,5 +218,4 @@ primed-stage-packages:
 - libqmi-proxy=1.38.0-1
 - libqmi-utils=1.38.0-1
 - libqrtr-glib0=1.2.2-2ubuntu1
-- libselinux1=3.9-4build1
 - modemmanager=1.25.95-1ubuntu1
