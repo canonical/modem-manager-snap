@@ -1,3 +1,13 @@
+2026-04-27 modem-manager 1.25.95-3
+
+  [ alfonsosanchezbeato <alfonso.sanchez-beato@canonical.com> ]
+  * Change snap grade to stable
+    Merge pull request #19 from lorenzo-medici/move-core26-stable
+
+  [ Changes in primed packages ]
+  
+  libselinux1: not primed anymore
+  
 2026-04-08 modem-manager 1.25.95-2
 
   [ Changes in primed packages ]
